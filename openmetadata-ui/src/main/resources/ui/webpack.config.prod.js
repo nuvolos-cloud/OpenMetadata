@@ -35,7 +35,7 @@ module.exports = {
     path: outputPath,
     filename: 'openmetadata.bundle.js',
     chunkFilename: '[name].[contenthash].js',
-    publicPath: '/proxy/8585',
+    publicPath: '/proxy/8585/',
   },
 
   // Loaders
