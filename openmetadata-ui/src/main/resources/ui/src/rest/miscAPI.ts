@@ -161,10 +161,12 @@ export const getSuggestedTeams = (term: string) => {
   );
 };
 
-export const getUserSuggestions = (term: string) => {
+export const getUserSuggestions = (term: string, userOnly = false) => {
   const params = {
     q: term || WILD_CARD_CHAR,
-    index: `${SearchIndex.USER},${SearchIndex.TEAM}`,
+    index: userOnly
+      ? SearchIndex.USER
+      : `${SearchIndex.USER},${SearchIndex.TEAM}`,
   };
 
   return APIClient.get<RawSuggestResponse<SearchIndex.USER>>(
@@ -250,7 +252,7 @@ export const deleteEntity = async (
     recursive: isRecursive,
   };
 
-  return APIClient.delete(`/${entityType}/${entityId}`, {
+  return APIClient.delete<{ version?: number }>(`/${entityType}/${entityId}`, {
     params,
   });
 };

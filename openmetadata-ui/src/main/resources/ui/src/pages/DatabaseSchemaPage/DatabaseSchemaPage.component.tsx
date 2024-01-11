@@ -15,7 +15,6 @@ import { Col, Row, Skeleton, Tabs, TabsProps } from 'antd';
 import { AxiosError } from 'axios';
 import { compare, Operation } from 'fast-json-patch';
 import { isEmpty, isUndefined } from 'lodash';
-import { observer } from 'mobx-react';
 import { EntityTags, PagingResponse } from 'Models';
 import React, {
   FunctionComponent,
@@ -27,7 +26,6 @@ import React, {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory, useParams } from 'react-router-dom';
-import { default as appState } from '../../AppState';
 import ActivityFeedProvider, {
   useActivityFeedProvider,
 } from '../../components/ActivityFeed/ActivityFeedProvider/ActivityFeedProvider';
@@ -204,7 +202,7 @@ const DatabaseSchemaPage: FunctionComponent = () => {
       const response = await getDatabaseSchemaDetailsByFQN(
         databaseSchemaFQN,
         ['owner', 'usageSummary', 'tags', 'domain', 'votes'],
-        'include=all'
+        Include.All
       );
       const { description: schemaDescription = '' } = response;
       setDatabaseSchema(response);
@@ -403,26 +401,32 @@ const DatabaseSchemaPage: FunctionComponent = () => {
     [getEntityFeedCount]
   );
 
-  const handleToggleDelete = () => {
+  const handleToggleDelete = (version?: number) => {
     setDatabaseSchema((prev) => {
       if (!prev) {
         return prev;
       }
 
-      return { ...prev, deleted: !prev?.deleted };
+      return {
+        ...prev,
+        deleted: !prev?.deleted,
+        ...(version ? { version } : {}),
+      };
     });
   };
 
   const handleRestoreDatabaseSchema = useCallback(async () => {
     try {
-      await restoreDatabaseSchema(databaseSchemaId);
+      const { version: newVersion } = await restoreDatabaseSchema(
+        databaseSchemaId
+      );
       showSuccessToast(
         t('message.restore-entities-success', {
           entity: t('label.database-schema'),
         }),
         2000
       );
-      handleToggleDelete();
+      handleToggleDelete(newVersion);
     } catch (error) {
       showErrorToast(
         error as AxiosError,
@@ -456,8 +460,8 @@ const DatabaseSchemaPage: FunctionComponent = () => {
   }, [currentVersion, databaseSchemaFQN]);
 
   const afterDeleteAction = useCallback(
-    (isSoftDelete?: boolean) =>
-      isSoftDelete ? handleToggleDelete() : history.push('/'),
+    (isSoftDelete?: boolean, version?: number) =>
+      isSoftDelete ? handleToggleDelete(version) : history.push('/'),
     []
   );
 
@@ -509,7 +513,6 @@ const DatabaseSchemaPage: FunctionComponent = () => {
   // always Keep this useEffect at the end...
   useEffect(() => {
     isMounting.current = false;
-    appState.inPageSearchText = '';
   }, []);
 
   const {
@@ -656,7 +659,7 @@ const DatabaseSchemaPage: FunctionComponent = () => {
       const response = await getDatabaseSchemaDetailsByFQN(
         databaseSchemaFQN,
         ['owner', 'usageSummary', 'tags', 'votes'],
-        'include=all'
+        Include.All
       );
       setDatabaseSchema(response);
     } catch (error) {
@@ -751,4 +754,4 @@ const DatabaseSchemaPage: FunctionComponent = () => {
   );
 };
 
-export default observer(withActivityFeed(DatabaseSchemaPage));
+export default withActivityFeed(DatabaseSchemaPage);

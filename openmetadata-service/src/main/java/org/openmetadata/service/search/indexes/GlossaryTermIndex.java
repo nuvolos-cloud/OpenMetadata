@@ -1,11 +1,8 @@
 package org.openmetadata.service.search.indexes;
 
-import static org.openmetadata.service.search.EntityBuilderConstant.FULLY_QUALIFIED_NAME;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.openmetadata.schema.entity.data.GlossaryTerm;
 import org.openmetadata.service.Entity;
 import org.openmetadata.service.search.SearchIndexUtils;
@@ -32,7 +29,7 @@ public class GlossaryTermIndex implements SearchIndex {
         "fqnParts",
         getFQNParts(
             glossaryTerm.getFullyQualifiedName(),
-            suggest.stream().map(SearchSuggest::getInput).collect(Collectors.toList())));
+            suggest.stream().map(SearchSuggest::getInput).toList()));
     doc.put("suggest", suggest);
     doc.put("entityType", Entity.GLOSSARY_TERM);
     doc.put("owner", getEntityWithDisplayName(glossaryTerm.getOwner()));
@@ -42,8 +39,6 @@ public class GlossaryTermIndex implements SearchIndex {
 
   public static Map<String, Float> getFields() {
     Map<String, Float> fields = SearchIndex.getDefaultFields();
-    fields.put(FULLY_QUALIFIED_NAME + ".keyword", 3.0f);
-    fields.put(FULLY_QUALIFIED_NAME + ".ngram", 1.0f);
     fields.put("synonyms", 5.0f);
     fields.put("synonyms.ngram", 1.0f);
     fields.put("glossary.name", 5.0f);

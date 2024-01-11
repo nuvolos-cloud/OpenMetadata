@@ -14,7 +14,6 @@
 import { Popover } from 'antd';
 import i18next from 'i18next';
 import {
-  get,
   isEmpty,
   isNil,
   isObject,
@@ -25,6 +24,7 @@ import {
 import { Bucket, EntityDetailUnion } from 'Models';
 import React, { Fragment } from 'react';
 import { Link } from 'react-router-dom';
+import { OwnerLabel } from '../components/common/OwnerLabel/OwnerLabel.component';
 import ProfilePicture from '../components/common/ProfilePicture/ProfilePicture';
 import QueryCount from '../components/common/QueryCount/QueryCount.component';
 import { DataAssetsWithoutServiceField } from '../components/DataAssets/DataAssetsHeader/DataAssetsHeader.interface';
@@ -116,7 +116,7 @@ import {
 } from './RouterUtils';
 import { getSearchIndexTabPath } from './SearchIndexUtils';
 import { getServiceRouteFromServiceType } from './ServiceUtils';
-import { getEncodedFqn } from './StringsUtils';
+import { getEncodedFqn, stringToHTML } from './StringsUtils';
 import {
   getDataTypeString,
   getTagsWithoutTier,
@@ -182,7 +182,6 @@ export const getOwnerNameWithProfilePic = (
       {' '}
       <ProfilePicture
         displayName={owner.displayName}
-        id={owner.id}
         name={owner.name ?? ''}
         width="20"
       />
@@ -204,21 +203,28 @@ const getTableFieldsFromTableDetails = (tableDetails: Table) => {
     profile,
     columns,
     tableType,
+    service,
+    database,
+    databaseSchema,
   } = tableDetails;
-  const [service, database, schema] = getPartialNameFromTableFQN(
+  const [serviceName, databaseName, schemaName] = getPartialNameFromTableFQN(
     fullyQualifiedName ?? '',
     [FqnPart.Service, FqnPart.Database, FqnPart.Schema],
     FQN_SEPARATOR_CHAR
   ).split(FQN_SEPARATOR_CHAR);
+
+  const serviceDisplayName = getEntityName(service) || serviceName;
+  const databaseDisplayName = getEntityName(database) || databaseName;
+  const schemaDisplayName = getEntityName(databaseSchema) || schemaName;
 
   const tier = getTierFromTableTags(tags ?? []);
 
   return {
     fullyQualifiedName,
     owner,
-    service,
-    database,
-    schema,
+    service: serviceDisplayName,
+    database: databaseDisplayName,
+    schema: schemaDisplayName,
     tier,
     usage: getUsageData(usageSummary),
     profile,
@@ -244,11 +250,7 @@ const getTableOverview = (tableDetails: Table) => {
   const overview = [
     {
       name: i18next.t('label.owner'),
-      value:
-        getOwnerNameWithProfilePic(owner) ??
-        i18next.t('label.no-entity', {
-          entity: i18next.t('label.owner'),
-        }),
+      value: <OwnerLabel hasPermission={false} owner={owner} />,
       url: getOwnerValue(owner as EntityReference),
       isLink: !isEmpty(owner?.name),
       visible: [DRAWER_NAVIGATION_OPTIONS.lineage],
@@ -340,6 +342,7 @@ const getTableOverview = (tableDetails: Table) => {
 const getPipelineOverview = (pipelineDetails: Pipeline) => {
   const { owner, tags, sourceUrl, service, displayName } = pipelineDetails;
   const tier = getTierFromTableTags(tags ?? []);
+  const serviceDisplayName = getEntityName(service);
 
   const overview = [
     {
@@ -358,7 +361,7 @@ const getPipelineOverview = (pipelineDetails: Pipeline) => {
         'label.url-uppercase'
       )}`,
       dataTestId: 'pipeline-url-label',
-      value: displayName ?? NO_DATA,
+      value: stringToHTML(displayName ?? '') || NO_DATA,
       url: sourceUrl,
       isLink: true,
       isExternal: true,
@@ -369,7 +372,7 @@ const getPipelineOverview = (pipelineDetails: Pipeline) => {
     },
     {
       name: i18next.t('label.service'),
-      value: (service?.name as string) || NO_DATA,
+      value: serviceDisplayName || NO_DATA,
       url: getServiceDetailsPath(
         service?.name as string,
         ServiceCategory.PIPELINE_SERVICES
@@ -392,6 +395,7 @@ const getPipelineOverview = (pipelineDetails: Pipeline) => {
 const getDashboardOverview = (dashboardDetails: Dashboard) => {
   const { owner, tags, sourceUrl, service, displayName } = dashboardDetails;
   const tier = getTierFromTableTags(tags ?? []);
+  const serviceDisplayName = getEntityName(service);
 
   const overview = [
     {
@@ -409,7 +413,7 @@ const getDashboardOverview = (dashboardDetails: Dashboard) => {
       name: `${i18next.t('label.dashboard')} ${i18next.t(
         'label.url-uppercase'
       )}`,
-      value: displayName ?? NO_DATA,
+      value: stringToHTML(displayName ?? '') || NO_DATA,
       url: sourceUrl,
       isLink: true,
       isExternal: true,
@@ -420,7 +424,7 @@ const getDashboardOverview = (dashboardDetails: Dashboard) => {
     },
     {
       name: i18next.t('label.service'),
-      value: (service?.fullyQualifiedName as string) || NO_DATA,
+      value: serviceDisplayName || NO_DATA,
       url: getServiceDetailsPath(
         service?.name as string,
         ServiceCategory.DASHBOARD_SERVICES
@@ -607,7 +611,7 @@ const getDataModelOverview = (dataModelDetails: DashboardDataModel) => {
       name: `${i18next.t('label.data-model')} ${i18next.t(
         'label.url-uppercase'
       )}`,
-      value: displayName || NO_DATA,
+      value: stringToHTML(displayName ?? '') || NO_DATA,
       url: getDataModelDetailsPath(fullyQualifiedName ?? ''),
       isLink: true,
       visible: [
@@ -1115,6 +1119,7 @@ export const searchInColumns = <T extends Column | SearchIndexField>(
     const searchLowerCase = lowerCase(searchText);
     const isContainData =
       lowerCase(column.name).includes(searchLowerCase) ||
+      lowerCase(column.displayName).includes(searchLowerCase) ||
       lowerCase(column.description).includes(searchLowerCase) ||
       lowerCase(getDataTypeString(column.dataType)).includes(searchLowerCase);
 
@@ -1171,7 +1176,10 @@ export const getFrequentlyJoinedWithColumns = (
   joins: Array<ColumnJoins>
 ): Array<JoinedWith> => {
   return (
-    joins?.find((join) => join.columnName === columnName)?.joinedWith || []
+    (joins &&
+      Boolean(joins.length) &&
+      joins?.find((join) => join.columnName === columnName)?.joinedWith) ||
+    []
   );
 };
 
@@ -1258,14 +1266,14 @@ export const getEntityReferenceFromEntity = <
   type: EntityType
 ): EntityReference => {
   return {
-    id: get(entity, 'id', ''),
+    id: entity.id,
     type,
-    deleted: get(entity, 'deleted', false),
-    description: get(entity, 'description', ''),
-    displayName: get(entity, 'displayName', ''),
-    fullyQualifiedName: get(entity, 'fullyQualifiedName', ''),
-    href: get(entity, 'href', ''),
-    name: get(entity, 'name', ''),
+    deleted: entity.deleted,
+    description: entity.description,
+    displayName: entity.displayName,
+    fullyQualifiedName: entity.fullyQualifiedName,
+    href: entity.href,
+    name: entity.name,
   };
 };
 
@@ -1757,4 +1765,46 @@ export const getEntityVoteStatus = (userId: string, votes?: Votes) => {
   } else {
     return QueryVoteType.unVoted;
   }
+};
+
+export const highlightEntityNameAndDescription = (
+  entity: SearchedDataProps['data'][number]['_source'],
+  highlight: SearchedDataProps['data'][number]['highlight']
+): SearchedDataProps['data'][number]['_source'] => {
+  let entityDescription = entity.description ?? '';
+  const descHighlights = highlight?.description ?? [];
+
+  if (descHighlights.length > 0) {
+    const matchTextArr = descHighlights.map((val: string) =>
+      val.replace(/<\/?span(.*?)>/g, '')
+    );
+
+    matchTextArr.forEach((text: string, i: number) => {
+      entityDescription = entityDescription.replace(text, descHighlights[i]);
+    });
+  }
+
+  let entityDisplayName = getEntityName(entity);
+  if (!isUndefined(highlight)) {
+    entityDisplayName =
+      highlight?.displayName?.join(' ') ||
+      highlight?.name?.join(' ') ||
+      entityDisplayName;
+  }
+
+  return {
+    ...entity,
+    displayName: entityDisplayName,
+    description: entityDescription,
+  };
+};
+
+export const columnSorter = (
+  col1: { name: string; displayName?: string },
+  col2: { name: string; displayName?: string }
+) => {
+  const name1 = getEntityName(col1);
+  const name2 = getEntityName(col2);
+
+  return name1.localeCompare(name2);
 };

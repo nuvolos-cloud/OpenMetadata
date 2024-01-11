@@ -25,6 +25,7 @@ import {
 import { TestSuite, TestSummary } from '../generated/tests/testSuite';
 import { Paging } from '../generated/type/paging';
 import { ListParams } from '../interface/API.interface';
+import { getEncodedFqn } from '../utils/StringsUtils';
 import APIClient from './index';
 
 export enum TestSuiteType {
@@ -34,6 +35,7 @@ export enum TestSuiteType {
 
 export type ListTestSuitePrams = ListParams & {
   testSuiteType?: TestSuiteType;
+  includeEmptyTestSuites?: boolean;
 };
 
 export type ListTestCaseParams = ListParams & {
@@ -98,7 +100,7 @@ export const getTestCaseByFqn = async (
   params?: { fields?: string[] }
 ) => {
   const response = await APIClient.get<TestCase>(
-    `/dataQuality/testCases/name/${fqn}`,
+    `/dataQuality/testCases/name/${getEncodedFqn(fqn)}`,
     {
       params,
     }

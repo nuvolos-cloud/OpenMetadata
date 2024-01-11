@@ -10,11 +10,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { TestCaseFailureStatus } from '../../../generated/tests/testCase';
+import { TestCaseResolutionStatus } from '../../../generated/tests/testCaseResolutionStatus';
 
 export interface TestCaseStatusModalProps {
   open: boolean;
-  data?: TestCaseFailureStatus;
+  data?: TestCaseResolutionStatus;
+  testCaseFqn: string;
   onCancel: () => void;
-  onSubmit: (data: TestCaseFailureStatus) => Promise<void>;
+  onSubmit: (data: TestCaseResolutionStatus) => void;
 }

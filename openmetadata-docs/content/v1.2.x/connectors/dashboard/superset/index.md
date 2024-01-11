@@ -11,7 +11,8 @@ slug: /connectors/dashboard/superset
 | Charts     | {% icon iconName="check" /%} |
 | Owners     | {% icon iconName="check" /%} |
 | Tags       | {% icon iconName="cross" /%} |
-| Datamodels | {% icon iconName="cross" /%} |
+| Datamodels | {% icon iconName="check" /%} |
+| Projects   | {% icon iconName="cross" /%} |
 | Lineage    | {% icon iconName="check" /%} |
 
 In this section, we provide guides and references to use the Superset connector.
@@ -29,7 +30,7 @@ The ingestion also works with Superset 2.0.0 🎉
 
 **API Connection**: To extract metadata from Superset via API, user must have at least `can read on Chart` & `can read on Dashboard` permissions.
 
-**Database Connection**: To extract metadata from Superset via MySQL or Postgres database, database user must have at least `SELECT` priviledge on `dashboards` & `slices` tables within superset schema.
+**Database Connection**: To extract metadata from Superset via MySQL or Postgres database, database user must have at least `SELECT` privilege on `dashboards` & `slices` tables within superset schema.
 
 ## Metadata Ingestion
 

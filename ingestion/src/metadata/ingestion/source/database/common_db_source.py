@@ -41,13 +41,16 @@ from metadata.generated.schema.entity.data.table import (
     TablePartition,
     TableType,
 )
+from metadata.generated.schema.entity.services.ingestionPipelines.status import (
+    StackTraceError,
+)
 from metadata.generated.schema.metadataIngestion.databaseServiceMetadataPipeline import (
     DatabaseServiceMetadataPipeline,
 )
 from metadata.generated.schema.metadataIngestion.workflow import (
     Source as WorkflowSource,
 )
-from metadata.ingestion.api.models import Either, StackTraceError
+from metadata.ingestion.api.models import Either
 from metadata.ingestion.lineage.sql_lineage import get_column_fqn
 from metadata.ingestion.models.ometa_classification import OMetaTagAndClassification
 from metadata.ingestion.ometa.ometa_api import OpenMetadata
@@ -246,6 +249,23 @@ class CommonDbSourceService(
             for table_name in self.inspector.get_table_names(schema_name) or []
         ]
 
+    def query_view_names_and_types(
+        self, schema_name: str
+    ) -> Iterable[TableNameAndType]:
+        """
+        Connect to the source database to get the view
+        name and type. By default, use the inspector method
+        to get the names and pass the View type.
+
+        This is useful for sources where we need fine-grained
+        logic on how to handle table types, e.g., material views,...
+        """
+
+        return [
+            TableNameAndType(name=table_name, type_=TableType.View)
+            for table_name in self.inspector.get_view_names(schema_name) or []
+        ]
+
     def get_tables_name_and_type(self) -> Optional[Iterable[Tuple[str, str]]]:
         """
         Handle table and views.
@@ -285,8 +305,10 @@ class CommonDbSourceService(
                     yield table_name, table_and_type.type_
 
             if self.source_config.includeViews:
-                for view_name in self.inspector.get_view_names(schema_name):
-                    view_name = self.standardize_table_name(schema_name, view_name)
+                for view_and_type in self.query_view_names_and_types(schema_name):
+                    view_name = self.standardize_table_name(
+                        schema_name, view_and_type.name
+                    )
                     view_fqn = fqn.build(
                         self.metadata,
                         entity_type=Table,
@@ -307,7 +329,7 @@ class CommonDbSourceService(
                             "Table Filtered Out",
                         )
                         continue
-                    yield view_name, TableType.View
+                    yield view_name, view_and_type.type_
         except Exception as err:
             logger.warning(
                 f"Fetching tables names failed for schema {schema_name} due to - {err}"
@@ -317,7 +339,7 @@ class CommonDbSourceService(
     def get_view_definition(
         self, table_type: str, table_name: str, schema_name: str, inspector: Inspector
     ) -> Optional[str]:
-        if table_type == TableType.View:
+        if table_type in (TableType.View, TableType.MaterializedView):
             try:
                 view_definition = inspector.get_view_definition(table_name, schema_name)
                 view_definition = (
@@ -469,7 +491,7 @@ class CommonDbSourceService(
             error = f"Unexpected exception to yield table [{table_name}]: {exc}"
             yield Either(
                 left=StackTraceError(
-                    name=table_name, error=error, stack_trace=traceback.format_exc()
+                    name=table_name, error=error, stackTrace=traceback.format_exc()
                 )
             )
 

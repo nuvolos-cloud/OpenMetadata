@@ -32,6 +32,7 @@ import deltalake from '../assets/img/service-icon-delta-lake.png';
 import domo from '../assets/img/service-icon-domo.png';
 import doris from '../assets/img/service-icon-doris.png';
 import druid from '../assets/img/service-icon-druid.png';
+import duckdb from '../assets/img/service-icon-duckdb.png';
 import dynamodb from '../assets/img/service-icon-dynamodb.png';
 import fivetran from '../assets/img/service-icon-fivetran.png';
 import gcs from '../assets/img/service-icon-gcs.png';
@@ -71,6 +72,7 @@ import sapHana from '../assets/img/service-icon-sap-hana.png';
 import scikit from '../assets/img/service-icon-scikit.png';
 import singlestore from '../assets/img/service-icon-singlestore.png';
 import snowflakes from '../assets/img/service-icon-snowflakes.png';
+import spark from '../assets/img/service-icon-spark.png';
 import spline from '../assets/img/service-icon-spline.png';
 import mysql from '../assets/img/service-icon-sql.png';
 import sqlite from '../assets/img/service-icon-sqlite.png';
@@ -142,6 +144,7 @@ export const METABASE = metabase;
 export const AZURESQL = azuresql;
 export const CLICKHOUSE = clickhouse;
 export const DATABRICK = databrick;
+export const UNITYCATALOG = databrick;
 export const IBMDB2 = ibmdb2;
 export const DORIS = doris;
 export const DRUID = druid;
@@ -180,6 +183,7 @@ export const SAGEMAKER = sagemaker;
 export const AMAZON_S3 = amazonS3;
 export const GCS = gcs;
 export const MS_AZURE = msAzure;
+export const SPARK = spark;
 export const SPLINE = spline;
 export const MONGODB = mongodb;
 export const QLIK_SENSE = qlikSense;
@@ -188,7 +192,7 @@ export const COUCHBASE = couchbase;
 export const GREENPLUM = greenplum;
 export const ELASTIC_SEARCH = elasticSearch;
 export const OPEN_SEARCH = openSearch;
-
+export const DUCKDB = duckdb;
 export const PLUS = plus;
 export const NOSERVICE = noService;
 export const excludedService = [
@@ -212,7 +216,7 @@ export const SERVICE_CATEGORY: { [key: string]: ServiceCategory } = {
   messaging: ServiceCategory.MESSAGING_SERVICES,
   dashboards: ServiceCategory.DASHBOARD_SERVICES,
   pipelines: ServiceCategory.PIPELINE_SERVICES,
-  mlModels: ServiceCategory.ML_MODEL_SERVICES,
+  mlmodels: ServiceCategory.ML_MODEL_SERVICES,
   metadata: ServiceCategory.METADATA_SERVICES,
   storages: ServiceCategory.STORAGE_SERVICES,
   search: ServiceCategory.SEARCH_SERVICES,
@@ -375,6 +379,7 @@ export const SERVICE_TYPES_ENUM = {
 export const BETA_SERVICES = [
   DatabaseServiceType.SapHana,
   PipelineServiceType.Spline,
+  PipelineServiceType.Spark,
   DatabaseServiceType.MongoDB,
   DashboardServiceType.QlikSense,
   DatabaseServiceType.Couchbase,

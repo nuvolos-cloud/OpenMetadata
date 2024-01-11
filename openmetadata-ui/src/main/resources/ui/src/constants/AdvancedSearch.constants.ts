@@ -55,6 +55,10 @@ export const COMMON_DROPDOWN_ITEMS = [
     label: t('label.service-type'),
     key: 'serviceType',
   },
+  {
+    label: t('label.column'),
+    key: 'columns.name.keyword',
+  },
 ];
 
 export const TABLE_DROPDOWN_ITEMS = [
@@ -171,6 +175,68 @@ export const DATA_PRODUCT_DROPDOWN_ITEMS = [
   },
 ];
 
+export const DOMAIN_DATAPRODUCT_DROPDOWN_ITEMS = [
+  {
+    label: t('label.entity-type-plural', {
+      entity: t('label.entity'),
+    }) as string,
+    key: 'entityType',
+  },
+  {
+    label: t('label.owner'),
+    key: 'owner.displayName.keyword',
+  },
+  {
+    label: t('label.tag'),
+    key: 'tags.tagFQN',
+  },
+  {
+    label: t('label.tier'),
+    key: 'tier.tagFQN',
+  },
+  {
+    label: t('label.service'),
+    key: 'service.displayName.keyword',
+  },
+  {
+    label: t('label.service-type'),
+    key: 'serviceType',
+  },
+];
+
+export const GLOSSARY_ASSETS_DROPDOWN_ITEMS = [
+  {
+    label: t('label.entity-type-plural', {
+      entity: t('label.entity'),
+    }) as string,
+    key: 'entityType',
+  },
+  {
+    label: t('label.domain'),
+    key: 'domain.displayName.keyword',
+  },
+  {
+    label: t('label.owner'),
+    key: 'owner.displayName.keyword',
+  },
+  {
+    label: t('label.tag'),
+    key: 'tags.tagFQN',
+  },
+  {
+    label: t('label.tier'),
+    key: 'tier.tagFQN',
+  },
+  {
+    label: t('label.service'),
+    key: 'service.displayName.keyword',
+  },
+  {
+    label: t('label.service-type'),
+    key: 'serviceType',
+  },
+];
+
 export const ALL_DROPDOWN_ITEMS = [
   ...COMMON_DROPDOWN_ITEMS,
   ...TABLE_DROPDOWN_ITEMS,
@@ -200,7 +266,7 @@ export const emptyJsonTree: JsonTree = {
           type: 'rule',
           properties: {
             // owner is common field , so setting owner as default field here
-            field: 'owner.displayName',
+            field: 'owner.displayName.keyword',
             operator: null,
             value: [],
             valueSrc: ['value'],
@@ -260,7 +326,7 @@ const getCommonQueryBuilderFields = (
       defaultValue: true,
     },
 
-    'owner.displayName': {
+    'owner.displayName.keyword': {
       label: t('label.owner'),
       type: 'select',
       mainWidgetProps,
@@ -302,7 +368,7 @@ const getCommonQueryBuilderFields = (
       },
     },
     extension: {
-      label: t('label.custom-attribute-plural'),
+      label: t('label.custom-property-plural'),
       type: '!group',
       mainWidgetProps,
       subfields: {},
@@ -317,7 +383,7 @@ const getCommonQueryBuilderFields = (
  */
 const getServiceQueryBuilderFields = (index: SearchIndex) => {
   const serviceQueryBuilderFields: Fields = {
-    'service.name': {
+    'service.displayName.keyword': {
       label: t('label.service'),
       type: 'select',
       mainWidgetProps,
@@ -338,7 +404,7 @@ const getServiceQueryBuilderFields = (index: SearchIndex) => {
  * Fields specific to tables
  */
 const tableQueryBuilderFields: Fields = {
-  'database.name': {
+  'database.displayName.keyword': {
     label: t('label.database'),
     type: 'select',
     mainWidgetProps,
@@ -351,7 +417,7 @@ const tableQueryBuilderFields: Fields = {
     },
   },
 
-  'databaseSchema.name': {
+  'databaseSchema.displayName.keyword': {
     label: t('label.database-schema'),
     type: 'select',
     mainWidgetProps,
@@ -364,7 +430,7 @@ const tableQueryBuilderFields: Fields = {
     },
   },
 
-  'columns.name': {
+  'columns.name.keyword': {
     label: t('label.column'),
     type: 'select',
     mainWidgetProps,

@@ -43,7 +43,6 @@ import { useEntityExportModalProvider } from '../../../components/Entity/EntityE
 import { EntityHeader } from '../../../components/Entity/EntityHeader/EntityHeader.component';
 import EntityDeleteModal from '../../../components/Modals/EntityDeleteModal/EntityDeleteModal';
 import EntityNameModal from '../../../components/Modals/EntityNameModal/EntityNameModal.component';
-import { OperationPermission } from '../../../components/PermissionProvider/PermissionProvider.interface';
 import Voting from '../../../components/Voting/Voting.component';
 import { VotingDataProps } from '../../../components/Voting/voting.interface';
 import { FQN_SEPARATOR_CHAR } from '../../../constants/char.constants';
@@ -71,24 +70,13 @@ import {
   getGlossaryTermsVersionsPath,
   getGlossaryVersionsPath,
 } from '../../../utils/RouterUtils';
+import { getEncodedFqn } from '../../../utils/StringsUtils';
 import SVGIcons, { Icons } from '../../../utils/SvgUtils';
 import { showErrorToast } from '../../../utils/ToastUtils';
 import { useAuthContext } from '../../Auth/AuthProviders/AuthProvider';
 import { TitleBreadcrumbProps } from '../../common/TitleBreadcrumb/TitleBreadcrumb.interface';
 import StyleModal from '../../Modals/StyleModal/StyleModal.component';
-
-export interface GlossaryHeaderProps {
-  isVersionView?: boolean;
-  supportAddOwner?: boolean;
-  selectedData: Glossary | GlossaryTerm;
-  permissions: OperationPermission;
-  isGlossary: boolean;
-  onUpdate: (data: GlossaryTerm | Glossary) => void;
-  onDelete: (id: string) => void;
-  onAssetAdd?: () => void;
-  updateVote?: (data: VotingDataProps) => Promise<void>;
-  onAddGlossaryTerm: (glossaryTerm: GlossaryTerm | undefined) => void;
-}
+import { GlossaryHeaderProps } from './GlossaryHeader.interface';
 
 const GlossaryHeader = ({
   selectedData,
@@ -195,7 +183,7 @@ const GlossaryHeader = ({
   const handleGlossaryImport = () =>
     history.push(
       getGlossaryPathWithAction(
-        encodeURIComponent(selectedData.fullyQualifiedName ?? ''),
+        getEncodedFqn(selectedData.fullyQualifiedName ?? ''),
         EntityAction.IMPORT
       )
     );
@@ -434,7 +422,9 @@ const GlossaryHeader = ({
               }}
               placement="bottomRight"
               trigger={['click']}>
-              <Button type="primary">
+              <Button
+                data-testid="glossary-term-add-button-menu"
+                type="primary">
                 <Space>
                   {t('label.add')}
                   <DownOutlined />

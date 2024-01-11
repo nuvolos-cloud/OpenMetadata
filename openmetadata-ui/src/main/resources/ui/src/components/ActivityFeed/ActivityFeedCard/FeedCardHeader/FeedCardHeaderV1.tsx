@@ -15,11 +15,8 @@ import classNames from 'classnames';
 import { isUndefined } from 'lodash';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import EntityPopOverCard from '../../../../components/common/PopOverCard/EntityPopOverCard';
-import UserPopOverCard from '../../../../components/common/PopOverCard/UserPopOverCard';
-import ProfilePicture from '../../../../components/common/ProfilePicture/ProfilePicture';
-import { getUserPath } from '../../../../constants/constants';
 import {
   formatDateTime,
   getRelativeTime,
@@ -31,16 +28,17 @@ import {
   getEntityFQN,
   getEntityType,
 } from '../../../../utils/FeedUtils';
-import { getEntityLink } from '../../../../utils/TableUtils';
+
+import { EntityType } from '../../../../enums/entity.enum';
+import entityUtilClassBase from '../../../../utils/EntityUtilClassBase';
+import UserPopOverCard from '../../../common/PopOverCard/UserPopOverCard';
 import './feed-card-header-v1.style.less';
-import FeedCardHeaderName from './FeedCardHeaderName';
 
 interface FeedCardHeaderV1Props {
   about?: string;
   createdBy?: string;
   timeStamp?: number;
   className?: string;
-  showUserAvatar?: boolean;
   isEntityFeed?: boolean;
 }
 
@@ -49,19 +47,15 @@ const FeedCardHeaderV1 = ({
   createdBy = '',
   timeStamp,
   className = '',
-  showUserAvatar = true,
   isEntityFeed = false,
 }: FeedCardHeaderV1Props) => {
   const { t } = useTranslation();
-  const history = useHistory();
+
   const entityType = getEntityType(entityLink) ?? '';
   const entityFQN = getEntityFQN(entityLink) ?? '';
   const entityField = getEntityField(entityLink) ?? '';
   const entityCheck = !isUndefined(entityFQN) && !isUndefined(entityType);
-
-  const onTitleClickHandler = (name: string) => {
-    history.push(getUserPath(name));
-  };
+  const isUserOrTeam = [EntityType.USER, EntityType.TEAM].includes(entityType);
 
   const getFeedLinkElement = entityCheck && (
     <span className="font-normal" data-testid="headerText">
@@ -73,14 +67,28 @@ const FeedCardHeaderV1 = ({
       ) : (
         <>
           <span data-testid="entityType">{entityType} </span>
-          <EntityPopOverCard entityFQN={entityFQN} entityType={entityType}>
-            <Link
-              className="break-all"
-              data-testid="entitylink"
-              to={getEntityLink(entityType, entityFQN)}>
-              <span>{entityDisplayName(entityType, entityFQN)}</span>
-            </Link>
-          </EntityPopOverCard>
+          {isUserOrTeam ? (
+            <UserPopOverCard
+              showUserName
+              showUserProfile={false}
+              userName={createdBy}>
+              <Link
+                className="break-all"
+                data-testid="entitylink"
+                to={entityUtilClassBase.getEntityLink(entityType, entityFQN)}>
+                <span>{entityDisplayName(entityType, entityFQN)}</span>
+              </Link>
+            </UserPopOverCard>
+          ) : (
+            <EntityPopOverCard entityFQN={entityFQN} entityType={entityType}>
+              <Link
+                className="break-all"
+                data-testid="entitylink"
+                to={entityUtilClassBase.getEntityLink(entityType, entityFQN)}>
+                <span>{entityDisplayName(entityType, entityFQN)}</span>
+              </Link>
+            </EntityPopOverCard>
+          )}
         </>
       )}
     </span>
@@ -88,28 +96,20 @@ const FeedCardHeaderV1 = ({
 
   return (
     <div className={classNames('feed-header', className)}>
-      {showUserAvatar && (
-        <UserPopOverCard userName={createdBy}>
-          <span className="p-r-xs cursor-pointer" data-testid="authorAvatar">
-            <ProfilePicture id="" name={createdBy} type="circle" width="24" />
-          </span>
-        </UserPopOverCard>
-      )}
-      <span className="feed-header-content">
-        <FeedCardHeaderName
-          createdBy={createdBy}
-          onTitleClickHandler={onTitleClickHandler}
-        />
-        {getFeedLinkElement}
+      <UserPopOverCard
+        showUserName
+        className="thread-author"
+        userName={createdBy}
+      />
+      {getFeedLinkElement}
 
-        {timeStamp && (
-          <Tooltip title={formatDateTime(timeStamp)}>
-            <span className="feed-header-timestamp" data-testid="timestamp">
-              {getRelativeTime(timeStamp)}
-            </span>
-          </Tooltip>
-        )}
-      </span>
+      {timeStamp && (
+        <Tooltip title={formatDateTime(timeStamp)}>
+          <span className="feed-header-timestamp" data-testid="timestamp">
+            {getRelativeTime(timeStamp)}
+          </span>
+        </Tooltip>
+      )}
     </div>
   );
 };

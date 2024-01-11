@@ -244,7 +244,10 @@ const PipelineDetailsPage = () => {
 
   const handleExtensionUpdate = async (updatedPipeline: Pipeline) => {
     try {
-      const data = await saveUpdatedPipelineData(updatedPipeline);
+      const data = await saveUpdatedPipelineData({
+        ...pipelineDetails,
+        extension: updatedPipeline.extension,
+      });
       setPipelineDetails(data);
     } catch (error) {
       showErrorToast(
@@ -256,13 +259,17 @@ const PipelineDetailsPage = () => {
     }
   };
 
-  const handleToggleDelete = () => {
+  const handleToggleDelete = (version?: number) => {
     setPipelineDetails((prev) => {
       if (!prev) {
         return prev;
       }
 
-      return { ...prev, deleted: !prev?.deleted };
+      return {
+        ...prev,
+        deleted: !prev?.deleted,
+        ...(version ? { version } : {}),
+      };
     });
   };
 

@@ -36,6 +36,7 @@ import { SearchIndex } from '../../enums/search.enum';
 import { ServiceCategory } from '../../enums/service.enum';
 import { Operation } from '../../generated/entity/policies/policy';
 import { EntityReference } from '../../generated/entity/type';
+import { Include } from '../../generated/type/include';
 import { usePaging } from '../../hooks/paging/usePaging';
 import { DatabaseServiceSearchSource } from '../../interface/search.interface';
 import { ServicesType } from '../../interface/service.interface';
@@ -49,9 +50,9 @@ import {
   getResourceEntityFromServiceCategory,
   getServiceTypesFromServiceCategory,
 } from '../../utils/ServiceUtils';
+import { getEncodedFqn } from '../../utils/StringsUtils';
 import { FilterIcon } from '../../utils/TableUtils';
 import { showErrorToast } from '../../utils/ToastUtils';
-import { useAuthContext } from '../Auth/AuthProviders/AuthProvider';
 import ErrorPlaceHolder from '../common/ErrorWithPlaceholder/ErrorPlaceHolder';
 import NextPrevious from '../common/NextPrevious/NextPrevious';
 import { PagingHandlerParams } from '../common/NextPrevious/NextPrevious.interface';
@@ -64,7 +65,6 @@ interface ServicesProps {
 
 const Services = ({ serviceName }: ServicesProps) => {
   const { t } = useTranslation();
-  const { isAuthDisabled } = useAuthContext();
   const history = useHistory();
   const handleAddServiceClick = () => {
     history.push(getAddServicePath(serviceName));
@@ -84,6 +84,7 @@ const Services = ({ serviceName }: ServicesProps) => {
     handlePageSizeChange,
     showPagination,
   } = usePaging();
+  const [deleted, setDeleted] = useState<boolean>(false);
   const { permissions } = usePermissionProvider();
 
   const searchIndex = useMemo(() => {
@@ -138,6 +139,7 @@ const Services = ({ serviceName }: ServicesProps) => {
             limit: limit ?? pageSize,
             currentPage,
             filters,
+            deleted,
           });
 
           services = hits.map(
@@ -150,6 +152,7 @@ const Services = ({ serviceName }: ServicesProps) => {
             limit: limit ?? pageSize,
             after,
             before,
+            include: deleted ? Include.Deleted : Include.NonDeleted,
           });
 
           services = data;
@@ -174,7 +177,7 @@ const Services = ({ serviceName }: ServicesProps) => {
         setIsLoading(false);
       }
     },
-    [searchIndex, serviceName]
+    [searchIndex, serviceName, deleted]
   );
 
   const handleServicePageChange = ({
@@ -196,6 +199,11 @@ const Services = ({ serviceName }: ServicesProps) => {
         permissions
       ),
     [permissions, serviceName]
+  );
+
+  const handleDeletedSwitchChange = useCallback(
+    () => setDeleted((prevValue) => !prevValue),
+    []
   );
 
   const getServicePageHeader = useCallback(() => {
@@ -275,7 +283,7 @@ const Services = ({ serviceName }: ServicesProps) => {
             className="max-two-lines"
             data-testid={`service-name-${name}`}
             to={getServiceDetailsPath(
-              encodeURIComponent(record.fullyQualifiedName ?? record.name),
+              getEncodedFqn(record.fullyQualifiedName ?? record.name),
               serviceName
             )}>
             {getEntityName(record)}
@@ -334,9 +342,7 @@ const Services = ({ serviceName }: ServicesProps) => {
                 <Link
                   className="no-underline"
                   to={getServiceDetailsPath(
-                    encodeURIComponent(
-                      service.fullyQualifiedName ?? service.name
-                    ),
+                    getEncodedFqn(service.fullyQualifiedName ?? service.name),
                     serviceName
                   )}>
                   <Typography.Text
@@ -401,7 +407,14 @@ const Services = ({ serviceName }: ServicesProps) => {
             .join(' ')})`
         : undefined,
     });
-  }, [searchIndex, pageSize, serviceName, searchTerm, serviceTypeFilter]);
+  }, [
+    searchIndex,
+    pageSize,
+    serviceName,
+    searchTerm,
+    serviceTypeFilter,
+    deleted,
+  ]);
 
   const handleTableChange: TableProps<ServicesType>['onChange'] = (
     _pagination,
@@ -427,7 +440,7 @@ const Services = ({ serviceName }: ServicesProps) => {
                   })
                 : NO_PERMISSION_FOR_ACTION
             }>
-            {(addServicePermission || isAuthDisabled) && (
+            {addServicePermission && (
               <Button
                 className="m-b-xs"
                 data-testid="add-service-button"
@@ -445,11 +458,13 @@ const Services = ({ serviceName }: ServicesProps) => {
       <Col span={24}>
         <ListView<ServicesType>
           cardRenderer={serviceCardRenderer}
+          deleted={deleted}
+          handleDeletedSwitchChange={handleDeletedSwitchChange}
           searchProps={{
             onSearch: handleServiceSearch,
             search: searchTerm,
           }}
-          tableprops={{
+          tableProps={{
             bordered: true,
             columns,
             dataSource: serviceDetails,

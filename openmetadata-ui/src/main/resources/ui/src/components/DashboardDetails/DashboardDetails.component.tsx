@@ -27,7 +27,6 @@ import { withActivityFeed } from '../../components/AppRouter/withActivityFeed';
 import DescriptionV1 from '../../components/common/EntityDescription/DescriptionV1';
 import ErrorPlaceHolder from '../../components/common/ErrorWithPlaceholder/ErrorPlaceHolder';
 import { DataAssetsHeader } from '../../components/DataAssets/DataAssetsHeader/DataAssetsHeader.component';
-import EntityLineageComponent from '../../components/Entity/EntityLineage/EntityLineage.component';
 import { EntityName } from '../../components/Modals/EntityNameModal/EntityNameModal.interface';
 import PageLayoutV1 from '../../components/PageLayoutV1/PageLayoutV1';
 import { ColumnFilter } from '../../components/Table/ColumnFilter/ColumnFilter.component';
@@ -62,9 +61,12 @@ import ActivityThreadPanel from '../ActivityFeed/ActivityThreadPanel/ActivityThr
 import { useAuthContext } from '../Auth/AuthProviders/AuthProvider';
 import { CustomPropertyTable } from '../common/CustomPropertyTable/CustomPropertyTable';
 import EntityRightPanel from '../Entity/EntityRightPanel/EntityRightPanel';
+import Lineage from '../Lineage/Lineage.component';
+import LineageProvider from '../LineageProvider/LineageProvider';
 import { ModalWithMarkdownEditor } from '../Modals/ModalWithMarkdownEditor/ModalWithMarkdownEditor';
 import { usePermissionProvider } from '../PermissionProvider/PermissionProvider';
 import { ResourceEntity } from '../PermissionProvider/PermissionProvider.interface';
+import { SourceType } from '../SearchedData/SearchedData.interface';
 import {
   ChartsPermissions,
   ChartType,
@@ -284,14 +286,16 @@ const DashboardDetails = ({
 
   const handleRestoreDashboard = async () => {
     try {
-      await restoreDashboard(dashboardDetails.id);
+      const { version: newVersion } = await restoreDashboard(
+        dashboardDetails.id
+      );
       showSuccessToast(
         t('message.restore-entities-success', {
           entity: t('label.dashboard'),
         }),
         2000
       );
-      handleToggleDelete();
+      handleToggleDelete(newVersion);
     } catch (error) {
       showErrorToast(
         error as AxiosError,
@@ -397,8 +401,8 @@ const DashboardDetails = ({
   };
 
   const afterDeleteAction = useCallback(
-    (isSoftDelete?: boolean) =>
-      isSoftDelete ? handleToggleDelete() : history.push('/'),
+    (isSoftDelete?: boolean, version?: number) =>
+      isSoftDelete ? handleToggleDelete(version) : history.push('/'),
     []
   );
 
@@ -657,12 +661,14 @@ const DashboardDetails = ({
         label: <TabsLabel id={EntityTabs.LINEAGE} name={t('label.lineage')} />,
         key: EntityTabs.LINEAGE,
         children: (
-          <EntityLineageComponent
-            deleted={deleted}
-            entity={dashboardDetails}
-            entityType={EntityType.DASHBOARD}
-            hasEditAccess={editLineagePermission}
-          />
+          <LineageProvider>
+            <Lineage
+              deleted={deleted}
+              entity={dashboardDetails as SourceType}
+              entityType={EntityType.DASHBOARD}
+              hasEditAccess={editLineagePermission}
+            />
+          </LineageProvider>
         ),
       },
       {
@@ -718,6 +724,7 @@ const DashboardDetails = ({
       <Row gutter={[0, 12]}>
         <Col className="p-x-lg" span={24}>
           <DataAssetsHeader
+            isRecursiveDelete
             afterDeleteAction={afterDeleteAction}
             afterDomainUpdateAction={updateDashboardDetailsState}
             dataAsset={dashboardDetails}

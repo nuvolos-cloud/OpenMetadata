@@ -11,16 +11,18 @@ slug: /connectors/database/trino/yaml
 | :----------------- | :--------------------------- |
 | Stage              | PROD                         |
 | Metadata           | {% icon iconName="check" /%} |
-| Query Usage        | {% icon iconName="cross" /%} |
+| Query Usage        | {% icon iconName="check" /%} |
 | Data Profiler      | {% icon iconName="check" /%} |
 | Data Quality       | {% icon iconName="check" /%} |
-| Stored Procedures            | {% icon iconName="cross" /%} |
+| Stored Procedures  | {% icon iconName="cross" /%} |
+| Owners             | {% icon iconName="cross" /%} |
+| Tags               | {% icon iconName="cross" /%} |
 | DBT                | {% icon iconName="check" /%} |
 | Supported Versions | --                           |
 
 | Feature      | Status                       |
 | :----------- | :--------------------------- |
-| Lineage      | Partially via Views          |
+| Lineage      | {% icon iconName="check" /%} |
 | Table-level  | {% icon iconName="check" /%} |
 | Column-level | {% icon iconName="check" /%} |
 
@@ -229,7 +231,7 @@ In order to integrate SSL in the Metadata Ingestion Config, the user will have t
 There are couple of types of SSL modes that redshift supports which can be added to ConnectionArguments, they are as follows:
 - **false**: In order to disable SSL verification, set the `verify` parameter to `False`.
 - **\<path-to-crt\>**: To use self-signed certificates, specify a path to the certificate in `verify` parameter.
-More details can be found in [the Python requests library documentation](https://requests.readthedocs.io/en/latest/user/advanced/#ssl-cert-verification).
+More details can be found in [the Python requests library documentation](https://requests.readthedocs.io/en/latest/user/advanced.html?highlight=ssl#ssl-cert-verification).
 
 {% /codeInfo %}
 

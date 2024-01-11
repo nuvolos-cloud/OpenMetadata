@@ -13,7 +13,6 @@ Snowflake source module
 """
 import json
 import traceback
-import urllib
 from typing import Dict, Iterable, List, Optional, Tuple
 
 import sqlparse
@@ -37,12 +36,15 @@ from metadata.generated.schema.entity.data.table import (
 from metadata.generated.schema.entity.services.connections.database.snowflakeConnection import (
     SnowflakeConnection,
 )
+from metadata.generated.schema.entity.services.ingestionPipelines.status import (
+    StackTraceError,
+)
 from metadata.generated.schema.metadataIngestion.workflow import (
     Source as WorkflowSource,
 )
 from metadata.generated.schema.type.basic import EntityName, SourceUrl
 from metadata.generated.schema.type.lifeCycle import AccessDetails, LifeCycle
-from metadata.ingestion.api.models import Either, StackTraceError
+from metadata.ingestion.api.models import Either
 from metadata.ingestion.api.steps import InvalidSourceException
 from metadata.ingestion.models.life_cycle import OMetaLifeCycleData
 from metadata.ingestion.models.ometa_classification import OMetaTagAndClassification
@@ -86,6 +88,7 @@ from metadata.ingestion.source.database.snowflake.utils import (
     get_unique_constraints,
     get_view_definition,
     get_view_names,
+    get_view_names_reflection,
     normalize_names,
 )
 from metadata.ingestion.source.database.stored_procedures_mixin import (
@@ -119,6 +122,7 @@ SnowflakeDialect._get_schema_columns = (  # pylint: disable=protected-access
     get_schema_columns
 )
 Inspector.get_table_names = get_table_names_reflection
+Inspector.get_view_names = get_view_names_reflection
 SnowflakeDialect._current_database_schema = (  # pylint: disable=protected-access
     _current_database_schema
 )
@@ -361,7 +365,7 @@ class SnowflakeSource(
                         left=StackTraceError(
                             name="Tags and Classifications",
                             error=f"Failed to fetch tags due to [{inner_exc}]",
-                            stack_trace=traceback.format_exc(),
+                            stackTrace=traceback.format_exc(),
                         )
                     )
 
@@ -512,9 +516,36 @@ class SnowflakeSource(
                     left=StackTraceError(
                         name=table.name.__root__,
                         error=f"Unable to get the table life cycle data for table {table.name.__root__}: {exc}",
-                        stack_trace=traceback.format_exc(),
+                        stackTrace=traceback.format_exc(),
                     )
                 )
+
+    def query_view_names_and_types(
+        self, schema_name: str
+    ) -> Iterable[TableNameAndType]:
+        """
+        Connect to the source database to get the view
+        name and type. By default, use the inspector method
+        to get the names and pass the View type.
+
+        This is useful for sources where we need fine-grained
+        logic on how to handle table types, e.g., material views,...
+        """
+
+        regular_views = [
+            TableNameAndType(name=view_name, type_=TableType.View)
+            for view_name in self.inspector.get_view_names(schema_name) or []
+        ]
+
+        materialized_views = [
+            TableNameAndType(name=view_name, type_=TableType.MaterializedView)
+            for view_name in self.inspector.get_view_names(
+                schema_name, materialized_views=True
+            )
+            or []
+        ]
+
+        return regular_views + materialized_views
 
     def get_stored_procedures(self) -> Iterable[SnowflakeStoredProcedure]:
         """List Snowflake stored procedures"""
@@ -552,7 +583,7 @@ class SnowflakeSource(
                 database_name=self.context.database,
                 schema_name=self.context.database_schema,
                 procedure_name=stored_procedure.name,
-                procedure_signature=urllib.parse.unquote(stored_procedure.signature),
+                procedure_signature=stored_procedure.unquote_signature(),
             )
         )
         return dict(res.all()).get("body", "")
@@ -563,39 +594,38 @@ class SnowflakeSource(
         """Prepare the stored procedure payload"""
 
         try:
-            yield Either(
-                right=CreateStoredProcedureRequest(
-                    name=EntityName(__root__=stored_procedure.name),
-                    description=stored_procedure.comment,
-                    storedProcedureCode=StoredProcedureCode(
-                        language=STORED_PROC_LANGUAGE_MAP.get(
-                            stored_procedure.language
-                        ),
-                        code=stored_procedure.definition,
-                    ),
-                    databaseSchema=fqn.build(
-                        metadata=self.metadata,
-                        entity_type=DatabaseSchema,
-                        service_name=self.context.database_service,
+            stored_procedure_request = CreateStoredProcedureRequest(
+                name=EntityName(__root__=stored_procedure.name),
+                description=stored_procedure.comment,
+                storedProcedureCode=StoredProcedureCode(
+                    language=STORED_PROC_LANGUAGE_MAP.get(stored_procedure.language),
+                    code=stored_procedure.definition,
+                ),
+                databaseSchema=fqn.build(
+                    metadata=self.metadata,
+                    entity_type=DatabaseSchema,
+                    service_name=self.context.database_service,
+                    database_name=self.context.database,
+                    schema_name=self.context.database_schema,
+                ),
+                sourceUrl=SourceUrl(
+                    __root__=self._get_source_url_root(
                         database_name=self.context.database,
                         schema_name=self.context.database_schema,
-                    ),
-                    sourceUrl=SourceUrl(
-                        __root__=self._get_source_url_root(
-                            database_name=self.context.database,
-                            schema_name=self.context.database_schema,
-                        )
-                        + f"/procedure/{stored_procedure.name}"
-                        + f"{stored_procedure.signature if stored_procedure.signature else ''}"
-                    ),
-                )
+                    )
+                    + f"/procedure/{stored_procedure.name}"
+                    + f"{stored_procedure.signature if stored_procedure.signature else ''}"
+                ),
             )
+            yield Either(right=stored_procedure_request)
+            self.register_record_stored_proc_request(stored_procedure_request)
+
         except Exception as exc:
             yield Either(
                 left=StackTraceError(
                     name=stored_procedure.name,
                     error=f"Error yielding Stored Procedure [{stored_procedure.name}] due to [{exc}]",
-                    stack_trace=traceback.format_exc(),
+                    stackTrace=traceback.format_exc(),
                 )
             )
 

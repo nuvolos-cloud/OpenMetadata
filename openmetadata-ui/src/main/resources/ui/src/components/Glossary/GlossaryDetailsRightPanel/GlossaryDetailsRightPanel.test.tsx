@@ -40,6 +40,27 @@ const mockPermissions = {
   ViewUsage: true,
 } as OperationPermission;
 
+jest.mock(
+  '../../../components/common/UserSelectableList/UserSelectableList.component',
+  () => ({
+    UserSelectableList: jest
+      .fn()
+      .mockImplementation(() => <>testUserSelectableList</>),
+  })
+);
+jest.mock(
+  '../../../components/common/UserTeamSelectableList/UserTeamSelectableList.component',
+  () => ({
+    UserTeamSelectableList: jest
+      .fn()
+      .mockImplementation(() => <>testUserTeamSelectableList</>),
+  })
+);
+
+jest.mock('../../../components/common/ProfilePicture/ProfilePicture', () => {
+  return jest.fn().mockImplementation(() => <>testProfilePicture</>);
+});
+
 describe('GlossaryDetailsRightPanel', () => {
   it('should render the GlossaryDetailsRightPanel component', () => {
     const { getByTestId } = render(
@@ -54,7 +75,7 @@ describe('GlossaryDetailsRightPanel', () => {
       </BrowserRouter>
     );
 
-    expect(getByTestId('glossary-owner-name')).toHaveTextContent('label.owner');
+    expect(getByTestId('owner-link')).toHaveTextContent('label.owner');
     expect(getByTestId('glossary-reviewer-heading-name')).toHaveTextContent(
       'label.reviewer-plural'
     );

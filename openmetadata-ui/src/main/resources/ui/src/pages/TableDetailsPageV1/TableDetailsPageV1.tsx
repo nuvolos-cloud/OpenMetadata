@@ -29,8 +29,9 @@ import DescriptionV1 from '../../components/common/EntityDescription/Description
 import ErrorPlaceHolder from '../../components/common/ErrorWithPlaceholder/ErrorPlaceHolder';
 import QueryViewer from '../../components/common/QueryViewer/QueryViewer.component';
 import { DataAssetsHeader } from '../../components/DataAssets/DataAssetsHeader/DataAssetsHeader.component';
-import EntityLineageComponent from '../../components/Entity/EntityLineage/EntityLineage.component';
 import EntityRightPanel from '../../components/Entity/EntityRightPanel/EntityRightPanel';
+import Lineage from '../../components/Lineage/Lineage.component';
+import LineageProvider from '../../components/LineageProvider/LineageProvider';
 import Loader from '../../components/Loader/Loader';
 import { EntityName } from '../../components/Modals/EntityNameModal/EntityNameModal.interface';
 import PageLayoutV1 from '../../components/PageLayoutV1/PageLayoutV1';
@@ -42,7 +43,7 @@ import {
 import SampleDataTableComponent from '../../components/SampleDataTable/SampleDataTable.component';
 import SchemaTab from '../../components/SchemaTab/SchemaTab.component';
 import { SourceType } from '../../components/SearchedData/SearchedData.interface';
-import TableProfilerV1 from '../../components/TableProfiler/TableProfilerV1';
+import TableProfiler from '../../components/TableProfiler/TableProfiler';
 import TableQueries from '../../components/TableQueries/TableQueries';
 import { QueryVote } from '../../components/TableQueries/TableQueries.interface';
 import TabsLabel from '../../components/TabsLabel/TabsLabel.component';
@@ -82,7 +83,7 @@ import {
 import { defaultFields } from '../../utils/DatasetDetailsUtils';
 import { getEntityName } from '../../utils/EntityUtils';
 import { DEFAULT_ENTITY_PERMISSION } from '../../utils/PermissionsUtils';
-import { getDecodedFqn } from '../../utils/StringsUtils';
+import { getDecodedFqn, getEncodedFqn } from '../../utils/StringsUtils';
 import { getTagsWithoutTier, getTierTags } from '../../utils/TableUtils';
 import { createTagObject, updateTierTag } from '../../utils/TagsUtils';
 import { showErrorToast, showSuccessToast } from '../../utils/ToastUtils';
@@ -121,9 +122,9 @@ const TableDetailsPageV1 = () => {
 
   const tableFqn = useMemo(
     () =>
-      encodeURIComponent(
+      getEncodedFqn(
         getPartialNameFromTableFQN(
-          decodeURIComponent(datasetFQN),
+          getDecodedFqn(datasetFQN),
           [FqnPart.Service, FqnPart.Database, FqnPart.Schema, FqnPart.Table],
           FQN_SEPARATOR_CHAR
         )
@@ -360,6 +361,20 @@ const TableDetailsPageV1 = () => {
       await onTableUpdate(updatedTableDetails, 'owner');
     },
     [owner, tableDetails]
+  );
+
+  const handleUpdateRetentionPeriod = useCallback(
+    async (newRetentionPeriod: Table['retentionPeriod']) => {
+      if (!tableDetails) {
+        return;
+      }
+      const updatedTableDetails = {
+        ...tableDetails,
+        retentionPeriod: newRetentionPeriod,
+      };
+      await onTableUpdate(updatedTableDetails, 'retentionPeriod');
+    },
+    [tableDetails]
   );
 
   const onDescriptionUpdate = async (updatedHTML: string) => {
@@ -641,7 +656,7 @@ const TableDetailsPageV1 = () => {
           !isTourOpen && !viewProfilerPermission ? (
             <ErrorPlaceHolder type={ERROR_PLACEHOLDER_TYPE.PERMISSION} />
           ) : (
-            <TableProfilerV1
+            <TableProfiler
               isTableDeleted={deleted}
               permissions={tablePermissions}
             />
@@ -651,12 +666,14 @@ const TableDetailsPageV1 = () => {
         label: <TabsLabel id={EntityTabs.LINEAGE} name={t('label.lineage')} />,
         key: EntityTabs.LINEAGE,
         children: (
-          <EntityLineageComponent
-            deleted={deleted}
-            entity={tableDetails as SourceType}
-            entityType={EntityType.TABLE}
-            hasEditAccess={editLineagePermission}
-          />
+          <LineageProvider>
+            <Lineage
+              deleted={deleted}
+              entity={tableDetails as SourceType}
+              entityType={EntityType.TABLE}
+              hasEditAccess={editLineagePermission}
+            />
+          </LineageProvider>
         ),
       },
 
@@ -754,26 +771,32 @@ const TableDetailsPageV1 = () => {
     [tableDetails, onTableUpdate, tableTags]
   );
 
-  const handleToggleDelete = () => {
+  const handleToggleDelete = (version?: number) => {
     setTableDetails((prev) => {
       if (!prev) {
         return prev;
       }
 
-      return { ...prev, deleted: !prev?.deleted };
+      return {
+        ...prev,
+        deleted: !prev?.deleted,
+        ...(version ? { version } : {}),
+      };
     });
   };
 
   const handleRestoreTable = async () => {
     try {
-      await restoreTable(tableDetails?.id ?? '');
+      const { version: newVersion } = await restoreTable(
+        tableDetails?.id ?? ''
+      );
       showSuccessToast(
         t('message.restore-entities-success', {
           entity: t('label.table'),
         }),
         2000
       );
-      handleToggleDelete();
+      handleToggleDelete(newVersion);
     } catch (error) {
       showErrorToast(
         error as AxiosError,
@@ -850,8 +873,8 @@ const TableDetailsPageV1 = () => {
   }, [version, tableFqn]);
 
   const afterDeleteAction = useCallback(
-    (isSoftDelete?: boolean) =>
-      isSoftDelete ? handleToggleDelete() : history.push('/'),
+    (isSoftDelete?: boolean, version?: number) =>
+      isSoftDelete ? handleToggleDelete(version) : history.push('/'),
     []
   );
 
@@ -930,6 +953,7 @@ const TableDetailsPageV1 = () => {
         {/* Entity Heading */}
         <Col className="p-x-lg" data-testid="entity-page-header" span={24}>
           <DataAssetsHeader
+            isRecursiveDelete
             afterDeleteAction={afterDeleteAction}
             afterDomainUpdateAction={updateTableDetailsState}
             dataAsset={tableDetails}
@@ -940,6 +964,7 @@ const TableDetailsPageV1 = () => {
             onOwnerUpdate={handleUpdateOwner}
             onRestoreDataAsset={handleRestoreTable}
             onTierUpdate={onTierUpdate}
+            onUpdateRetentionPeriod={handleUpdateRetentionPeriod}
             onUpdateVote={updateVote}
             onVersionClick={versionHandler}
           />

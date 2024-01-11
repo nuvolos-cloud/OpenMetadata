@@ -25,7 +25,7 @@ caption="Banking Glossary"
 
 Watch the [Webinar on Glossaries and Classifications in OpenMetadata](https://www.youtube.com/watch?v=LII_5CDo_0s)
 
-[![Watch the video](/images/v1.2/how-to-guides/governance/glossary-webinar.png)](https://www.youtube.com/watch?v=LII_5CDo_0s)
+{%  youtube videoId="LII_5CDo_0s" start="0:00" end="52:35" width="560px" height="315px" /%}
 
 ## Glossary APIs
 
@@ -61,6 +61,20 @@ You can create, delete, modify, and update using APIs. Refer to the **[Glossary 
   icon="MdUpload"
   href="/how-to-guides/data-governance/glossary/import"%}
   Save time and effort by bulk uploading glossary terms using a CSV file.
+ {%/inlineCallout%}
+ {%inlineCallout
+  color="violet-70"
+  bold="Glossary Approval Workflow"
+  icon="MdPushPin"
+  href="/how-to-guides/data-governance/glossary/approval"%}
+  Set up a review and approval process for glossary terms.
+ {%/inlineCallout%}
+  {%inlineCallout
+  color="violet-70"
+  bold="Glossary Styling"
+  icon="MdPushPin"
+  href="/how-to-guides/data-governance/glossary/styling"%}
+  Stylize your glossary terms with color-coding and icons.
  {%/inlineCallout%}
  {%inlineCallout
   color="violet-70"

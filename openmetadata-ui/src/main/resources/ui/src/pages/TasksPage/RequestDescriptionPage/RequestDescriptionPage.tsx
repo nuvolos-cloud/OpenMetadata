@@ -46,6 +46,7 @@ import {
   fetchEntityDetail,
   fetchOptions,
   getBreadCrumbList,
+  getTaskMessage,
 } from '../../../utils/TasksUtils';
 import { showErrorToast, showSuccessToast } from '../../../utils/ToastUtils';
 import Assignees from '../shared/Assignees';
@@ -72,11 +73,17 @@ const RequestDescription = () => {
   const [assignees, setAssignees] = useState<Array<Option>>([]);
   const [suggestion, setSuggestion] = useState<string>('');
 
-  const getSanitizeValue = value?.replaceAll(/^"|"$/g, '') || '';
-
-  const message = `Request description for ${getSanitizeValue || entityType} ${
-    field !== EntityField.COLUMNS ? getEntityName(entityData) : ''
-  }`;
+  const taskMessage = useMemo(
+    () =>
+      getTaskMessage({
+        value,
+        entityType,
+        entityData,
+        field,
+        startMessage: 'Request description',
+      }),
+    [value, entityType, field, entityData]
+  );
 
   const decodedEntityFQN = useMemo(
     () => getDecodedFqn(entityFQN),
@@ -86,7 +93,11 @@ const RequestDescription = () => {
   const back = () => history.goBack();
 
   const onSearch = (query: string) => {
-    fetchOptions(query, setOptions);
+    const data = {
+      query,
+      setOptions,
+    };
+    fetchOptions(data);
   };
 
   const getTaskAbout = () => {
@@ -105,7 +116,7 @@ const RequestDescription = () => {
     if (assignees.length) {
       const data: CreateThread = {
         from: currentUser?.name as string,
-        message: value.title || message,
+        message: value.title || taskMessage,
         about: getEntityFeedLink(entityType, decodedEntityFQN, getTaskAbout()),
         taskDetails: {
           assignees: assignees.map((assignee) => ({
@@ -153,13 +164,14 @@ const RequestDescription = () => {
           label: getEntityName(owner),
           value: owner.id || '',
           type: owner.type,
+          name: owner.name,
         },
       ];
       setAssignees(defaultAssignee);
       setOptions(defaultAssignee);
     }
     form.setFieldsValue({
-      title: message.trimEnd(),
+      title: taskMessage.trimEnd(),
       assignees: defaultAssignee,
     });
   }, [entityData]);
@@ -225,6 +237,7 @@ const RequestDescription = () => {
                     },
                   ]}>
                   <Assignees
+                    disabled={Boolean(entityData.owner)}
                     options={options}
                     value={assignees}
                     onChange={setAssignees}

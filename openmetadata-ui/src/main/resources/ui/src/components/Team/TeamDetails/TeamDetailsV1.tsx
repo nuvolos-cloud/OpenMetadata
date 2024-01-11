@@ -143,7 +143,7 @@ const TeamDetailsV1 = ({
   const history = useHistory();
   const location = useLocation();
   const { isAdminUser } = useAuth();
-  const { currentUser, isAuthDisabled } = useAuthContext();
+  const { currentUser } = useAuthContext();
 
   const { activeTab } = useMemo(() => {
     const param = location.search;
@@ -899,21 +899,14 @@ const TeamDetailsV1 = ({
           {t('label.leave-team')}
         </Button>
       ) : (
-        (Boolean(currentTeam.isJoinable) || isAuthDisabled || isAdminUser) && (
+        (Boolean(currentTeam.isJoinable) || isAdminUser) && (
           <Button data-testid="join-teams" type="primary" onClick={joinTeam}>
             {t('label.join-team')}
           </Button>
         )
       )),
 
-    [
-      currentUser,
-      isAlreadyJoinedTeam,
-      isAuthDisabled,
-      isAdminUser,
-      joinTeam,
-      deleteUserHandler,
-    ]
+    [currentUser, isAlreadyJoinedTeam, isAdminUser, joinTeam, deleteUserHandler]
   );
 
   const teamsCollapseHeader = useMemo(
@@ -951,7 +944,7 @@ const TeamDetailsV1 = ({
                   entityName={
                     currentTeam.fullyQualifiedName ?? currentTeam.name
                   }
-                  entityType="team"
+                  entityType={EntityType.TEAM}
                   extraDropdownContent={extraDropdownContent}
                   hardDeleteMessagePostFix={getDeleteMessagePostFix(
                     currentTeam.fullyQualifiedName ?? currentTeam.name,
@@ -967,6 +960,7 @@ const TeamDetailsV1 = ({
               <ManageButton
                 canDelete={false}
                 entityName={currentTeam.fullyQualifiedName ?? currentTeam.name}
+                entityType={EntityType.TEAM}
                 extraDropdownContent={[...IMPORT_EXPORT_MENU_ITEM]}
               />
             )}

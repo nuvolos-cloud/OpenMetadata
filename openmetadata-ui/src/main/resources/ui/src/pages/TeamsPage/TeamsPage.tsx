@@ -17,7 +17,6 @@ import { cloneDeep, isEmpty, isUndefined } from 'lodash';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory, useParams } from 'react-router-dom';
-import AppState from '../../AppState';
 import { useAuthContext } from '../../components/Auth/AuthProviders/AuthProvider';
 import ErrorPlaceHolder from '../../components/common/ErrorWithPlaceholder/ErrorPlaceHolder';
 import Loader from '../../components/Loader/Loader';
@@ -27,7 +26,7 @@ import {
   ResourceEntity,
 } from '../../components/PermissionProvider/PermissionProvider.interface';
 import TeamDetailsV1 from '../../components/Team/TeamDetails/TeamDetailsV1';
-import { HTTP_STATUS_CODE } from '../../constants/auth.constants';
+import { HTTP_STATUS_CODE } from '../../constants/Auth.constants';
 import { ERROR_PLACEHOLDER_TYPE } from '../../enums/common.enum';
 import { SearchIndex } from '../../enums/search.enum';
 import { CreateTeam, TeamType } from '../../generated/api/teams/createTeam';
@@ -43,6 +42,7 @@ import {
 import { updateUserDetail } from '../../rest/userAPI';
 import { DEFAULT_ENTITY_PERMISSION } from '../../utils/PermissionsUtils';
 import { getSettingPath, getTeamsWithFqnPath } from '../../utils/RouterUtils';
+import { getDecodedFqn } from '../../utils/StringsUtils';
 import { showErrorToast, showSuccessToast } from '../../utils/ToastUtils';
 import AddTeamForm from './AddTeamForm';
 
@@ -127,7 +127,7 @@ const TeamsPage = () => {
   const fetchAllTeamsBasicDetails = async (parentTeam?: string) => {
     try {
       const { data } = await getTeams(undefined, {
-        parentTeam: decodeURIComponent(parentTeam ?? '') ?? 'organization',
+        parentTeam: getDecodedFqn(parentTeam ?? '') ?? 'organization',
         include: 'all',
       });
 
@@ -155,7 +155,7 @@ const TeamsPage = () => {
       const { data } = await getTeams(
         ['userCount', 'childrenCount', 'owns', 'parents'],
         {
-          parentTeam: decodeURIComponent(parentTeam ?? '') ?? 'organization',
+          parentTeam: getDecodedFqn(parentTeam ?? '') ?? 'organization',
           include: 'all',
         }
       );
@@ -325,7 +325,7 @@ const TeamsPage = () => {
       .then((res) => {
         if (res) {
           updateCurrentUser(res);
-          AppState.updateUserDetails(res);
+
           setSelectedTeam((prev) => ({ ...prev, ...res }));
           showSuccessToast(t('server.join-team-success'), 2000);
         } else {
@@ -343,7 +343,6 @@ const TeamsPage = () => {
         .then((res) => {
           if (res) {
             updateCurrentUser(res);
-            AppState.updateUserDetails(res);
             setSelectedTeam((prev) => ({ ...prev, ...res }));
             showSuccessToast(t('server.leave-team-success'), 2000);
             resolve();

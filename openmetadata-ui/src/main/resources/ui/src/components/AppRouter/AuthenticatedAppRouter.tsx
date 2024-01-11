@@ -18,6 +18,7 @@ import AddDomain from '../../components/Domain/AddDomain/AddDomain.component';
 import DomainPage from '../../components/Domain/DomainPage.component';
 import { ROUTES } from '../../constants/constants';
 import { Operation } from '../../generated/entity/policies/policy';
+import AddCustomMetricPage from '../../pages/AddCustomMetricPage/AddCustomMetricPage';
 import { CustomizablePage } from '../../pages/CustomizablePage/CustomizablePage';
 import DataQualityPage from '../../pages/DataQuality/DataQualityPage';
 import { checkPermission, userPermissions } from '../../utils/PermissionsUtils';
@@ -31,8 +32,8 @@ const GlobalSettingPage = withSuspenseFallback(
   React.lazy(() => import('../../pages/GlobalSettingPage/GlobalSettingPage'))
 );
 
-const MyDataPageV1 = withSuspenseFallback(
-  React.lazy(() => import('../../pages/MyDataPage/MyDataPageV1.component'))
+const MyDataPage = withSuspenseFallback(
+  React.lazy(() => import('../../pages/MyDataPage/MyDataPage.component'))
 );
 
 const TestSuiteIngestionPage = withSuspenseFallback(
@@ -345,6 +346,19 @@ const EditLoginConfiguration = withSuspenseFallback(
   )
 );
 
+const IncidentManagerPage = withSuspenseFallback(
+  React.lazy(() => import('../../pages/IncidentManager/IncidentManagerPage'))
+);
+
+const IncidentManagerDetailPage = withSuspenseFallback(
+  React.lazy(
+    () =>
+      import(
+        '../../pages/IncidentManager/IncidentManagerDetailPage/IncidentManagerDetailPage'
+      )
+  )
+);
+
 const AuthenticatedAppRouter: FunctionComponent = () => {
   const { permissions } = usePermissionProvider();
   const { routeElements } = useApplicationConfigContext();
@@ -389,7 +403,7 @@ const AuthenticatedAppRouter: FunctionComponent = () => {
 
   return (
     <Switch>
-      <Route exact component={MyDataPageV1} path={ROUTES.MY_DATA} />
+      <Route exact component={MyDataPage} path={ROUTES.MY_DATA} />
       <Route exact component={TourPageComponent} path={ROUTES.TOUR} />
       <Route exact component={ExplorePageV1} path={ROUTES.EXPLORE} />
       <Route component={ExplorePageV1} path={ROUTES.EXPLORE_WITH_TAB} />
@@ -698,7 +712,16 @@ const AuthenticatedAppRouter: FunctionComponent = () => {
         component={AddDataQualityTestPage}
         path={ROUTES.ADD_DATA_QUALITY_TEST_CASE}
       />
-
+      <AdminProtectedRoute
+        exact
+        component={AddCustomMetricPage}
+        hasPermission={checkPermission(
+          Operation.Create,
+          ResourceEntity.TABLE,
+          permissions
+        )}
+        path={ROUTES.ADD_CUSTOM_METRIC}
+      />
       <AdminProtectedRoute
         exact
         component={DataProductsPage}
@@ -872,6 +895,36 @@ const AuthenticatedAppRouter: FunctionComponent = () => {
           permissions
         )}
         path={ROUTES.DATA_QUALITY}
+      />
+
+      <AdminProtectedRoute
+        exact
+        component={IncidentManagerPage}
+        hasPermission={userPermissions.hasViewPermissions(
+          ResourceEntity.TEST_CASE,
+          permissions
+        )}
+        path={ROUTES.INCIDENT_MANAGER}
+      />
+
+      <AdminProtectedRoute
+        exact
+        component={IncidentManagerDetailPage}
+        hasPermission={userPermissions.hasViewPermissions(
+          ResourceEntity.TEST_CASE,
+          permissions
+        )}
+        path={ROUTES.INCIDENT_MANAGER_DETAILS}
+      />
+
+      <AdminProtectedRoute
+        exact
+        component={IncidentManagerDetailPage}
+        hasPermission={userPermissions.hasViewPermissions(
+          ResourceEntity.TEST_CASE,
+          permissions
+        )}
+        path={ROUTES.INCIDENT_MANAGER_DETAILS_WITH_TAB}
       />
 
       <AdminProtectedRoute

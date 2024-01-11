@@ -35,7 +35,7 @@ public class PasswordUtil {
   static {
     List<Rule> rules = new ArrayList<>();
     // 8 and 16 characters
-    rules.add(new LengthRule(8, 16));
+    rules.add(new LengthRule(8, 56));
     // No whitespace allowed
     rules.add(new WhitespaceRule());
     // At least one Upper-case character
@@ -55,7 +55,7 @@ public class PasswordUtil {
     PasswordData password = new PasswordData(pwd);
     RuleResult result = VALIDATOR.validate(password);
     if (!result.isValid()) {
-      throw new RuntimeException(PASSWORD_INVALID_FORMAT);
+      throw new IllegalArgumentException(PASSWORD_INVALID_FORMAT);
     }
   }
 

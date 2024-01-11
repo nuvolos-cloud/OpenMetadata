@@ -117,7 +117,7 @@ caption="Most Viewed Data Assets"
 
 ### Page Views by Data Assets
 
-It helps to understand the total number of page views by asset type. This allows you to understand which asset familly drives the most interest in your organization
+It helps to understand the total number of page views by asset type. This allows you to understand which asset family drives the most interest in your organization
 
 {% image
 src="/images/v1.2/how-to-guides/insights/pvda.png"
@@ -215,8 +215,8 @@ caption="Frequently Used Assets"
 
 {%inlineCallout
   color="violet-70"
-  bold="Configure the Data Insights Report"
+  bold="Cost Analysis"
   icon="MdArrowForward"
-  href="/how-to-guides/data-insights/email-report"%}
-  Email the data insights report to Admins and Teams at the desired frequency.
+  href="/how-to-guides/data-insights/cost-analysis"%}
+  Get valuable insights with the cost analysis reports.
 {%/inlineCallout%}

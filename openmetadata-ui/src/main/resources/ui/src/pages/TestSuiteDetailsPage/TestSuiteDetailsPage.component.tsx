@@ -18,7 +18,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory, useParams } from 'react-router-dom';
 import { AddTestCaseList } from '../../components/AddTestCaseList/AddTestCaseList.component';
-import { useAuthContext } from '../../components/Auth/AuthProviders/AuthProvider';
 import Description from '../../components/common/EntityDescription/Description';
 import ManageButton from '../../components/common/EntityPageInfos/ManageButton/ManageButton';
 import ErrorPlaceHolder from '../../components/common/ErrorWithPlaceholder/ErrorPlaceHolder';
@@ -38,6 +37,7 @@ import {
 } from '../../components/PermissionProvider/PermissionProvider.interface';
 import DataQualityTab from '../../components/ProfilerDashboard/component/DataQualityTab';
 import { ACTION_TYPE, ERROR_PLACEHOLDER_TYPE } from '../../enums/common.enum';
+import { EntityType } from '../../enums/entity.enum';
 import { TestCase } from '../../generated/tests/testCase';
 import { TestSuite } from '../../generated/tests/testSuite';
 import { Include } from '../../generated/type/include';
@@ -63,9 +63,6 @@ const TestSuiteDetailsPage = () => {
   const { fqn: testSuiteFQN } = useParams<{ fqn: string }>();
   const { isAdminUser } = useAuth();
   const history = useHistory();
-  const { isAuthDisabled } = useAuthContext();
-
-  const hasAccess = isAdminUser || isAuthDisabled;
 
   const afterDeleteAction = () => {
     history.push(getDataQualityPagePath(DataQualityPageTabs.TEST_SUITES));
@@ -131,7 +128,7 @@ const TestSuiteDetailsPage = () => {
     setIsTestCaseLoading(true);
     try {
       const response = await getListTestCase({
-        fields: 'testCaseResult,testDefinition,testSuite',
+        fields: 'testCaseResult,testDefinition,testSuite,incidentId',
         testSuiteId,
         orderByLastExecutionDate: true,
         ...param,
@@ -341,18 +338,18 @@ const TestSuiteDetailsPage = () => {
                 isRecursiveDelete
                 afterDeleteAction={afterDeleteAction}
                 allowSoftDelete={false}
-                canDelete={hasAccess}
+                canDelete={isAdminUser}
                 deleted={testSuite?.deleted}
                 entityId={testSuite?.id}
                 entityName={testSuite?.fullyQualifiedName as string}
-                entityType="testSuite"
+                entityType={EntityType.TEST_SUITE}
               />
             </Space>
           </Space>
 
           <div className="w-full m-t-xxs m-b-xs">
             <OwnerLabel
-              hasPermission={hasAccess}
+              hasPermission={isAdminUser}
               owner={testOwner}
               onUpdate={onUpdateOwner}
             />
@@ -362,7 +359,7 @@ const TestSuiteDetailsPage = () => {
             className="test-suite-description"
             description={testSuiteDescription}
             entityName={getEntityName(testSuite)}
-            hasEditAccess={hasAccess}
+            hasEditAccess={isAdminUser}
             isEdit={isDescriptionEditable}
             onCancel={() => descriptionHandler(false)}
             onDescriptionEdit={() => descriptionHandler(true)}

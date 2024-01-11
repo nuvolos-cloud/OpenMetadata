@@ -15,7 +15,7 @@ import { Button, Col, Modal, Row, Space, Switch, Tooltip } from 'antd';
 import { ColumnsType } from 'antd/lib/table';
 import { AxiosError } from 'axios';
 import { isEmpty } from 'lodash';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
 import { ReactComponent as IconDelete } from '../../assets/svg/ic-delete.svg';
@@ -38,6 +38,7 @@ import { GlobalSettingOptions } from '../../constants/GlobalSettings.constants';
 import { ADMIN_ONLY_ACTION } from '../../constants/HelperTextUtil';
 import { PAGE_HEADERS } from '../../constants/PageHeaders.constant';
 import { ERROR_PLACEHOLDER_TYPE } from '../../enums/common.enum';
+import { EntityType } from '../../enums/entity.enum';
 import { SearchIndex } from '../../enums/search.enum';
 import { CreateUser } from '../../generated/api/teams/createUser';
 import { User } from '../../generated/entity/teams/user';
@@ -58,8 +59,8 @@ const UserListPageV1 = () => {
   const { tab } = useParams<{ [key: string]: GlobalSettingOptions }>();
   const history = useHistory();
   const location = useLocation();
-  const { isAdminUser } = useAuth();
   const isAdminPage = useMemo(() => tab === GlobalSettingOptions.ADMINS, [tab]);
+  const { isAdminUser } = useAuth();
 
   const [isDataLoading, setIsDataLoading] = useState<boolean>(true);
   const [showDeletedUser, setShowDeletedUser] = useState<boolean>(false);
@@ -95,6 +96,7 @@ const UserListPageV1 = () => {
       const { data, paging: userPaging } = await getUsers({
         isBot: false,
         fields: 'profile,teams,roles',
+        limit: pageSize,
         ...params,
       });
 
@@ -115,7 +117,6 @@ const UserListPageV1 = () => {
     fetchUsersList({
       isAdmin: isAdminPage,
       include: showDeletedUser ? Include.Deleted : Include.NonDeleted,
-      limit: pageSize,
     });
   };
 
@@ -171,23 +172,30 @@ const UserListPageV1 = () => {
     );
   };
 
-  const handleUserPageChange = ({
-    cursorType,
-    currentPage,
-  }: PagingHandlerParams) => {
-    if (searchValue) {
-      handlePageChange(currentPage);
-      getSearchedUsers(searchValue, currentPage);
-    } else if (cursorType && paging[cursorType]) {
-      handlePageChange(currentPage);
-      fetchUsersList({
-        isAdmin: isAdminPage,
-        [cursorType]: paging[cursorType],
-        include: showDeletedUser ? Include.Deleted : Include.NonDeleted,
-        limit: pageSize,
-      });
-    }
-  };
+  const handleUserPageChange = useCallback(
+    ({ cursorType, currentPage }: PagingHandlerParams) => {
+      if (searchValue) {
+        handlePageChange(currentPage);
+        getSearchedUsers(searchValue, currentPage);
+      } else if (cursorType && paging[cursorType]) {
+        handlePageChange(currentPage);
+        fetchUsersList({
+          isAdmin: isAdminPage,
+          [cursorType]: paging[cursorType],
+          include: showDeletedUser ? Include.Deleted : Include.NonDeleted,
+        });
+      }
+    },
+    [
+      isAdminPage,
+      paging,
+      pageSize,
+      showDeletedUser,
+      handlePageChange,
+      fetchUsersList,
+      getSearchedUsers,
+    ]
+  );
 
   const handleShowDeletedUserChange = (value: boolean) => {
     handlePageChange(INITIAL_PAGING_VALUE);
@@ -207,7 +215,6 @@ const UserListPageV1 = () => {
     // This function is called onChange in the search input with debouncing
     // Hence using history.replace instead of history.push to avoid adding multiple routes in history
     history.replace({
-      pathname: location.pathname,
       search: value && params.toString(),
     });
     if (value) {
@@ -219,6 +226,9 @@ const UserListPageV1 = () => {
 
   useEffect(() => {
     initialSetup();
+  }, [tab]);
+
+  useEffect(() => {
     if (teamsAndUsers.includes(tab)) {
       // Checking if the path has search query present in it
       // if present fetch userlist with the query
@@ -233,14 +243,13 @@ const UserListPageV1 = () => {
         setIsDataLoading(false);
       } else {
         fetchUsersList({
-          isAdmin: tab === GlobalSettingOptions.ADMINS,
-          limit: pageSize,
+          isAdmin: isAdminPage,
         });
       }
     } else {
       setIsDataLoading(false);
     }
-  }, [tab, pageSize]);
+  }, [pageSize, isAdminPage]);
 
   const handleAddNewUser = () => {
     history.push(ROUTES.CREATE_USER);
@@ -468,7 +477,7 @@ const UserListPageV1 = () => {
         allowSoftDelete={!showDeletedUser}
         entityId={selectedUser?.id || ''}
         entityName={selectedUser?.name || ''}
-        entityType="user"
+        entityType={EntityType.USER}
         visible={showDeleteModal}
         onCancel={() => {
           setShowDeleteModal(false);

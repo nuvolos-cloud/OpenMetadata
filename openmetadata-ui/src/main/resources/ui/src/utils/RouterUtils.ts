@@ -39,8 +39,10 @@ import {
 } from '../constants/GlobalSettings.constants';
 import { arrServiceTypes } from '../constants/Services.constant';
 import { EntityAction } from '../enums/entity.enum';
+import { ProfilerDashboardType } from '../enums/table.enum';
 import { PipelineType } from '../generated/api/services/ingestionPipelines/createIngestionPipeline';
 import { DataQualityPageTabs } from '../pages/DataQuality/DataQualityPage.interface';
+import { IncidentManagerTabs } from '../pages/IncidentManager/IncidentManager.interface';
 import { getServiceRouteFromServiceType } from './ServiceUtils';
 import { getEncodedFqn } from './StringsUtils';
 
@@ -130,7 +132,7 @@ export const getDomainPath = (fqn?: string) => {
   let path = ROUTES.DOMAIN;
   if (fqn) {
     path = ROUTES.DOMAIN_DETAILS;
-    path = path.replace(PLACEHOLDER_ROUTE_FQN, encodeURIComponent(fqn));
+    path = path.replace(PLACEHOLDER_ROUTE_FQN, getEncodedFqn(fqn));
   }
 
   return path;
@@ -164,7 +166,7 @@ export const getGlossaryPath = (fqn?: string) => {
   let path = ROUTES.GLOSSARY;
   if (fqn) {
     path = ROUTES.GLOSSARY_DETAILS;
-    path = path.replace(PLACEHOLDER_ROUTE_FQN, encodeURIComponent(fqn));
+    path = path.replace(PLACEHOLDER_ROUTE_FQN, getEncodedFqn(fqn));
   }
 
   return path;
@@ -351,6 +353,18 @@ export const getAddDataQualityTableTestPath = (
 
   return path;
 };
+export const getAddCustomMetricPath = (
+  dashboardType: ProfilerDashboardType,
+  fqn: string
+) => {
+  let path = ROUTES.ADD_CUSTOM_METRIC;
+
+  path = path
+    .replace(PLACEHOLDER_DASHBOARD_TYPE, dashboardType)
+    .replace(PLACEHOLDER_ROUTE_FQN, getEncodedFqn(fqn));
+
+  return path;
+};
 
 export const getTestSuitePath = (testSuiteName: string) => {
   let path = ROUTES.TEST_SUITES_WITH_FQN;
@@ -500,7 +514,7 @@ export const getGlossaryTermsVersionsPath = (
     ? ROUTES.GLOSSARY_TERMS_VERSION_TAB
     : ROUTES.GLOSSARY_TERMS_VERSION;
   path = path
-    .replace(PLACEHOLDER_ROUTE_FQN, encodeURIComponent(glossaryTermsFQN))
+    .replace(PLACEHOLDER_ROUTE_FQN, getEncodedFqn(glossaryTermsFQN))
     .replace(PLACEHOLDER_ROUTE_VERSION, version);
 
   if (tab) {
@@ -524,6 +538,19 @@ export const getDataQualityPagePath = (tab?: DataQualityPageTabs) => {
   if (tab) {
     path = path.replace(PLACEHOLDER_ROUTE_TAB, tab);
   }
+
+  return path;
+};
+
+export const getIncidentManagerDetailPagePath = (
+  fqn: string,
+  tab = IncidentManagerTabs.TEST_CASE_RESULTS
+) => {
+  let path = ROUTES.INCIDENT_MANAGER_DETAILS_WITH_TAB;
+
+  path = path
+    .replace(PLACEHOLDER_ROUTE_FQN, fqn)
+    .replace(PLACEHOLDER_ROUTE_TAB, tab);
 
   return path;
 };

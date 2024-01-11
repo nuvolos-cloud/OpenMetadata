@@ -15,6 +15,7 @@ package org.openmetadata.service.resources.lineage;
 
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
+import es.org.elasticsearch.action.search.SearchResponse;
 import io.dropwizard.jersey.errors.ErrorMessage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -22,6 +23,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.io.IOException;
 import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
@@ -84,7 +86,10 @@ public class LineageResource {
         @ApiResponse(
             responseCode = "200",
             description = "Entity lineage",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = EntityLineage.class))),
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = EntityLineage.class))),
         @ApiResponse(responseCode = "404", description = "Entity for instance {id} is not found")
       })
   public EntityLineage get(
@@ -95,7 +100,11 @@ public class LineageResource {
               schema = @Schema(type = "string", example = "table, report, metrics, or dashboard"))
           @PathParam("entity")
           String entity,
-      @Parameter(description = "Id of the entity", required = true, schema = @Schema(type = "string")) @PathParam("id")
+      @Parameter(
+              description = "Id of the entity",
+              required = true,
+              schema = @Schema(type = "string"))
+          @PathParam("id")
           String id,
       @Parameter(description = "Upstream depth of lineage (default=1, min=0, max=3)")
           @DefaultValue("1")
@@ -123,7 +132,10 @@ public class LineageResource {
         @ApiResponse(
             responseCode = "200",
             description = "Entity lineage",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = EntityLineage.class))),
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = EntityLineage.class))),
         @ApiResponse(responseCode = "404", description = "Entity for instance {fqn} is not found")
       })
   public EntityLineage getByName(
@@ -155,17 +167,55 @@ public class LineageResource {
     return addHref(uriInfo, dao.getByName(entity, fqn, upstreamDepth, downStreamDepth));
   }
 
+  @GET
+  @Path("/getLineage")
+  @Operation(
+      operationId = "searchLineage",
+      summary = "Search lineage",
+      responses = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "search response",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = SearchResponse.class)))
+      })
+  public Response searchLineage(
+      @Context UriInfo uriInfo,
+      @Context SecurityContext securityContext,
+      @Parameter(description = "fqn") @QueryParam("fqn") String fqn,
+      @Parameter(description = "upstreamDepth") @QueryParam("upstreamDepth") int upstreamDepth,
+      @Parameter(description = "downstreamDepth") @QueryParam("downstreamDepth")
+          int downstreamDepth,
+      @Parameter(
+              description =
+                  "Elasticsearch query that will be combined with the query_string query generator from the `query` argument")
+          @QueryParam("query_filter")
+          String queryFilter,
+      @Parameter(description = "Filter documents by deleted param. By default deleted is false")
+          @QueryParam("includeDeleted")
+          boolean deleted)
+      throws IOException {
+
+    return Entity.getSearchRepository()
+        .searchLineage(fqn, upstreamDepth, downstreamDepth, queryFilter, deleted);
+  }
+
   @PUT
   @Operation(
       operationId = "addLineageEdge",
       summary = "Add a lineage edge",
-      description = "Add a lineage edge with from entity as upstream node and to entity as downstream node.",
+      description =
+          "Add a lineage edge with from entity as upstream node and to entity as downstream node.",
       responses = {
         @ApiResponse(responseCode = "200"),
         @ApiResponse(responseCode = "404", description = "Entity for instance {id} is not found")
       })
   public Response addLineage(
-      @Context UriInfo uriInfo, @Context SecurityContext securityContext, @Valid AddLineage addLineage) {
+      @Context UriInfo uriInfo,
+      @Context SecurityContext securityContext,
+      @Valid AddLineage addLineage) {
     authorizer.authorize(
         securityContext,
         new OperationContext(LINEAGE_FIELD, MetadataOperation.EDIT_LINEAGE),
@@ -179,10 +229,13 @@ public class LineageResource {
   @Operation(
       operationId = "deleteLineageEdge",
       summary = "Delete a lineage edge",
-      description = "Delete a lineage edge with from entity as upstream node and to entity as downstream node.",
+      description =
+          "Delete a lineage edge with from entity as upstream node and to entity as downstream node.",
       responses = {
         @ApiResponse(responseCode = "200"),
-        @ApiResponse(responseCode = "404", description = "Entity for instance {fromId} is not found")
+        @ApiResponse(
+            responseCode = "404",
+            description = "Entity for instance {fromId} is not found")
       })
   public Response deleteLineage(
       @Context UriInfo uriInfo,
@@ -193,7 +246,8 @@ public class LineageResource {
               schema = @Schema(type = "string", example = "table, report, metrics, or dashboard"))
           @PathParam("fromEntity")
           String fromEntity,
-      @Parameter(description = "Entity id", required = true, schema = @Schema(type = "string")) @PathParam("fromId")
+      @Parameter(description = "Entity id", required = true, schema = @Schema(type = "string"))
+          @PathParam("fromId")
           String fromId,
       @Parameter(
               description = "Entity type for downstream entity of the edge",
@@ -201,7 +255,8 @@ public class LineageResource {
               schema = @Schema(type = "string", example = "table, report, metrics, or dashboard"))
           @PathParam("toEntity")
           String toEntity,
-      @Parameter(description = "Entity id", required = true, schema = @Schema(type = "string")) @PathParam("toId")
+      @Parameter(description = "Entity id", required = true, schema = @Schema(type = "string"))
+          @PathParam("toId")
           String toId) {
     authorizer.authorize(
         securityContext,

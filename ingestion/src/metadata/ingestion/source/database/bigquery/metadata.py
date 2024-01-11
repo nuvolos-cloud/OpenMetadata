@@ -9,7 +9,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 """
-We require Taxonomy Admin permissions to fetch all Policy Tags
+Bigquery source module
 """
 import os
 import traceback
@@ -29,7 +29,7 @@ from metadata.generated.schema.api.data.createDatabaseSchema import (
 from metadata.generated.schema.api.data.createStoredProcedure import (
     CreateStoredProcedureRequest,
 )
-from metadata.generated.schema.entity.data.database import Database, EntityName
+from metadata.generated.schema.entity.data.database import Database
 from metadata.generated.schema.entity.data.databaseSchema import DatabaseSchema
 from metadata.generated.schema.entity.data.storedProcedure import StoredProcedureCode
 from metadata.generated.schema.entity.data.table import (
@@ -40,15 +40,18 @@ from metadata.generated.schema.entity.data.table import (
 from metadata.generated.schema.entity.services.connections.database.bigQueryConnection import (
     BigQueryConnection,
 )
+from metadata.generated.schema.entity.services.ingestionPipelines.status import (
+    StackTraceError,
+)
 from metadata.generated.schema.metadataIngestion.workflow import (
     Source as WorkflowSource,
 )
 from metadata.generated.schema.security.credentials.gcpValues import (
     GcpCredentialsValues,
 )
-from metadata.generated.schema.type.basic import SourceUrl
+from metadata.generated.schema.type.basic import EntityName, SourceUrl
 from metadata.generated.schema.type.tagLabel import TagLabel
-from metadata.ingestion.api.models import Either, StackTraceError
+from metadata.ingestion.api.models import Either
 from metadata.ingestion.api.steps import InvalidSourceException
 from metadata.ingestion.models.ometa_classification import OMetaTagAndClassification
 from metadata.ingestion.ometa.ometa_api import OpenMetadata
@@ -206,6 +209,8 @@ class BigquerySource(StoredProcedureMixin, CommonDbSourceService, MultiDBSource)
         super().__init__(config, metadata)
         self.temp_credentials = None
         self.client = None
+        # Used to delete temp json file created while initializing bigquery client
+        self.temp_credentials_file_path = []
         # Upon invoking the set_project_id method, we retrieve a comprehensive
         # list of all project IDs. Subsequently, after the invokation,
         # we proceed to test the connections for each of these project IDs
@@ -237,6 +242,8 @@ class BigquerySource(StoredProcedureMixin, CommonDbSourceService, MultiDBSource)
             test_connection_fn(
                 self.metadata, inspector_details.engine, self.service_connection
             )
+            if os.environ[GOOGLE_CREDENTIALS]:
+                self.temp_credentials_file_path.append(os.environ[GOOGLE_CREDENTIALS])
 
     def query_table_names_and_types(
         self, schema_name: str
@@ -306,7 +313,7 @@ class BigquerySource(StoredProcedureMixin, CommonDbSourceService, MultiDBSource)
                 left=StackTraceError(
                     name="Tags and Classifications",
                     error=f"Skipping Policy Tag ingestion due to: {exc}",
-                    stack_trace=traceback.format_exc(),
+                    stackTrace=traceback.format_exc(),
                 )
             )
 
@@ -423,7 +430,7 @@ class BigquerySource(StoredProcedureMixin, CommonDbSourceService, MultiDBSource)
         inspector_details = get_inspector_details(
             database_name=database_name, service_connection=self.service_connection
         )
-
+        self.temp_credentials_file_path.append(os.environ[GOOGLE_CREDENTIALS])
         self.client = inspector_details.client
         self.engine = inspector_details.engine
         self.inspector = inspector_details.inspector
@@ -522,9 +529,10 @@ class BigquerySource(StoredProcedureMixin, CommonDbSourceService, MultiDBSource)
         if isinstance(
             self.service_connection.credentials.gcpConfig, GcpCredentialsValues
         ) and (GOOGLE_CREDENTIALS in os.environ):
-            tmp_credentials_file = os.environ[GOOGLE_CREDENTIALS]
-            os.remove(tmp_credentials_file)
             del os.environ[GOOGLE_CREDENTIALS]
+            for temp_file_path in self.temp_credentials_file_path:
+                if os.path.exists(temp_file_path):
+                    os.remove(temp_file_path)
 
     def _get_source_url(
         self,
@@ -604,38 +612,38 @@ class BigquerySource(StoredProcedureMixin, CommonDbSourceService, MultiDBSource)
         """Prepare the stored procedure payload"""
 
         try:
-            yield Either(
-                right=CreateStoredProcedureRequest(
-                    name=EntityName(__root__=stored_procedure.name),
-                    storedProcedureCode=StoredProcedureCode(
-                        language=STORED_PROC_LANGUAGE_MAP.get(
-                            stored_procedure.language or "SQL",
-                        ),
-                        code=stored_procedure.definition,
+            stored_procedure_request = CreateStoredProcedureRequest(
+                name=EntityName(__root__=stored_procedure.name),
+                storedProcedureCode=StoredProcedureCode(
+                    language=STORED_PROC_LANGUAGE_MAP.get(
+                        stored_procedure.language or "SQL",
                     ),
-                    databaseSchema=fqn.build(
-                        metadata=self.metadata,
-                        entity_type=DatabaseSchema,
-                        service_name=self.context.database_service,
+                    code=stored_procedure.definition,
+                ),
+                databaseSchema=fqn.build(
+                    metadata=self.metadata,
+                    entity_type=DatabaseSchema,
+                    service_name=self.context.database_service,
+                    database_name=self.context.database,
+                    schema_name=self.context.database_schema,
+                ),
+                sourceUrl=SourceUrl(
+                    __root__=self.get_stored_procedure_url(
                         database_name=self.context.database,
                         schema_name=self.context.database_schema,
-                    ),
-                    sourceUrl=SourceUrl(
-                        __root__=self.get_stored_procedure_url(
-                            database_name=self.context.database,
-                            schema_name=self.context.database_schema,
-                            # Follow the same building strategy as tables
-                            table_name=stored_procedure.name,
-                        )
-                    ),
-                )
+                        # Follow the same building strategy as tables
+                        table_name=stored_procedure.name,
+                    )
+                ),
             )
+            yield Either(right=stored_procedure_request)
+            self.register_record_stored_proc_request(stored_procedure_request)
         except Exception as exc:
             yield Either(
                 left=StackTraceError(
                     name=stored_procedure.name,
                     error=f"Error yielding Stored Procedure [{stored_procedure.name}] due to [{exc}]",
-                    stack_trace=traceback.format_exc(),
+                    stackTrace=traceback.format_exc(),
                 )
             )
 

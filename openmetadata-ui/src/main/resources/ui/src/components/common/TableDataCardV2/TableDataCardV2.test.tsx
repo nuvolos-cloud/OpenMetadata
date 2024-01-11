@@ -17,7 +17,6 @@ import { MemoryRouter } from 'react-router-dom';
 import TableDataCardV2 from './TableDataCardV2';
 
 jest.mock('../../../utils/TableUtils', () => ({
-  getEntityLink: jest.fn().mockReturnValue('EntityLink'),
   getServiceIcon: jest.fn(),
   getEntityIcon: jest.fn().mockReturnValue(<p>icon</p>),
   getUsagePercentile: jest
@@ -53,11 +52,12 @@ describe('Test TableDataCard Component', () => {
         source={{
           id: '1',
           name: 'Name1',
+          fullyQualifiedName: 'test',
         }}
       />,
       { wrapper: MemoryRouter }
     );
-    const tableDataCard = getByTestId('table-data-card');
+    const tableDataCard = getByTestId('table-data-card_test');
     const entityHeader = getByText('EntityHeader');
 
     expect(tableDataCard).toBeInTheDocument();

@@ -14,7 +14,9 @@ slug: /connectors/database/snowflake/yaml
 | Query Usage        | {% icon iconName="check" /%} |
 | Data Profiler      | {% icon iconName="check" /%} |
 | Data Quality       | {% icon iconName="check" /%} |
-| Stored Procedures            | {% icon iconName="check" /%} |
+| Stored Procedures  | {% icon iconName="check" /%} |
+| Owners             | {% icon iconName="cross" /%} |
+| Tags               | {% icon iconName="check" /%} |
 | DBT                | {% icon iconName="check" /%} |
 | Supported Versions | --                           |
 
@@ -168,7 +170,7 @@ This is a sample config for Snowflake:
 
 {% codeInfo srNumber=6 %}
 
-**includeTempTables**: Optional configuration for ingestion of TRANSIENT and TEMPORARY tables, By default, it will skip the TRANSIENT and TEMPORARY tables.
+**includeTransientTables**: Optional configuration for ingestion of TRANSIENT and TEMPORARY tables, By default, it will skip the TRANSIENT and TEMPORARY tables.
 
 {% /codeInfo %}
 
@@ -248,7 +250,7 @@ source:
       # database: <database>
 ```
 ```yaml {% srNumber=6 %}
-      includeTempTables: false
+      includeTransientTables: false
 ```
 ```yaml {% srNumber=39 %}
       clientSessionKeepAlive: false

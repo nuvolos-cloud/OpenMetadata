@@ -27,13 +27,16 @@ public class MlModelIndex implements SearchIndex {
     suggest.add(SearchSuggest.builder().input(mlModel.getName()).weight(10).build());
 
     ParseTags parseTags = new ParseTags(Entity.getEntityTags(Entity.MLMODEL, mlModel));
-    doc.put("displayName", mlModel.getDisplayName() != null ? mlModel.getDisplayName() : mlModel.getName());
+    doc.put(
+        "displayName",
+        mlModel.getDisplayName() != null ? mlModel.getDisplayName() : mlModel.getName());
     doc.put("tags", parseTags.getTags());
     doc.put("tier", parseTags.getTierTag());
     doc.put("followers", SearchIndexUtils.parseFollowers(mlModel.getFollowers()));
     doc.put("suggest", suggest);
     doc.put("entityType", Entity.MLMODEL);
     doc.put("serviceType", mlModel.getServiceType());
+    doc.put("lineage", SearchIndex.getLineageData(mlModel.getEntityReference()));
     doc.put(
         "fqnParts",
         getFQNParts(

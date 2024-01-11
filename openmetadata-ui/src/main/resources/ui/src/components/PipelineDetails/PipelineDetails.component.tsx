@@ -26,7 +26,6 @@ import { ActivityFeedTab } from '../../components/ActivityFeed/ActivityFeedTab/A
 import { CustomPropertyTable } from '../../components/common/CustomPropertyTable/CustomPropertyTable';
 import DescriptionV1 from '../../components/common/EntityDescription/DescriptionV1';
 import { DataAssetsHeader } from '../../components/DataAssets/DataAssetsHeader/DataAssetsHeader.component';
-import EntityLineageComponent from '../../components/Entity/EntityLineage/EntityLineage.component';
 import ExecutionsTab from '../../components/Execution/Execution.component';
 import { EntityName } from '../../components/Modals/EntityNameModal/EntityNameModal.interface';
 import PageLayoutV1 from '../../components/PageLayoutV1/PageLayoutV1';
@@ -72,9 +71,13 @@ import ActivityThreadPanel from '../ActivityFeed/ActivityThreadPanel/ActivityThr
 import { withActivityFeed } from '../AppRouter/withActivityFeed';
 import { useAuthContext } from '../Auth/AuthProviders/AuthProvider';
 import EntityRightPanel from '../Entity/EntityRightPanel/EntityRightPanel';
+import Lineage from '../Lineage/Lineage.component';
+import LineageProvider from '../LineageProvider/LineageProvider';
 import { ModalWithMarkdownEditor } from '../Modals/ModalWithMarkdownEditor/ModalWithMarkdownEditor';
 import { usePermissionProvider } from '../PermissionProvider/PermissionProvider';
 import { ResourceEntity } from '../PermissionProvider/PermissionProvider.interface';
+import { SourceType } from '../SearchedData/SearchedData.interface';
+import './pipeline-details.style.less';
 import { PipeLineDetailsProp } from './PipelineDetails.interface';
 
 const PipelineDetails = ({
@@ -241,14 +244,14 @@ const PipelineDetails = ({
 
   const handleRestorePipeline = async () => {
     try {
-      await restorePipeline(pipelineDetails.id);
+      const { version: newVersion } = await restorePipeline(pipelineDetails.id);
       showSuccessToast(
         t('message.restore-entities-success', {
           entity: t('label.pipeline'),
         }),
         2000
       );
-      handleToggleDelete();
+      handleToggleDelete(newVersion);
     } catch (error) {
       showErrorToast(
         error as AxiosError,
@@ -516,15 +519,15 @@ const PipelineDetails = ({
   };
 
   const afterDeleteAction = useCallback(
-    (isSoftDelete?: boolean) =>
-      isSoftDelete ? handleToggleDelete() : history.push('/'),
+    (isSoftDelete?: boolean, version?: number) =>
+      isSoftDelete ? handleToggleDelete(version) : history.push('/'),
     []
   );
 
   const tasksDAGView = useMemo(
     () =>
       !isEmpty(pipelineDetails.tasks) && !isUndefined(pipelineDetails.tasks) ? (
-        <Card headStyle={{ background: '#fafafa' }} title={t('label.dag-view')}>
+        <Card className="task-dag-view-card" title={t('label.dag-view')}>
           <div className="h-100">
             <TasksDAGView
               selectedExec={selectedExecution}
@@ -653,12 +656,14 @@ const PipelineDetails = ({
         label: <TabsLabel id={EntityTabs.LINEAGE} name={t('label.lineage')} />,
         key: EntityTabs.LINEAGE,
         children: (
-          <EntityLineageComponent
-            deleted={deleted}
-            entity={pipelineDetails}
-            entityType={EntityType.PIPELINE}
-            hasEditAccess={editLineagePermission}
-          />
+          <LineageProvider>
+            <Lineage
+              deleted={deleted}
+              entity={pipelineDetails as SourceType}
+              entityType={EntityType.PIPELINE}
+              hasEditAccess={editLineagePermission}
+            />
+          </LineageProvider>
         ),
       },
       {
@@ -720,6 +725,7 @@ const PipelineDetails = ({
       <Row gutter={[0, 12]}>
         <Col className="p-x-lg" span={24}>
           <DataAssetsHeader
+            isRecursiveDelete
             afterDeleteAction={afterDeleteAction}
             afterDomainUpdateAction={updatePipelineDetailsState}
             dataAsset={pipelineDetails}

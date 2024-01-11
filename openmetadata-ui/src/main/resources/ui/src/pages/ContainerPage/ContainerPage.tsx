@@ -29,8 +29,9 @@ import ErrorPlaceHolder from '../../components/common/ErrorWithPlaceholder/Error
 import ContainerChildren from '../../components/ContainerDetail/ContainerChildren/ContainerChildren';
 import ContainerDataModel from '../../components/ContainerDetail/ContainerDataModel/ContainerDataModel';
 import { DataAssetsHeader } from '../../components/DataAssets/DataAssetsHeader/DataAssetsHeader.component';
-import EntityLineageComponent from '../../components/Entity/EntityLineage/EntityLineage.component';
 import EntityRightPanel from '../../components/Entity/EntityRightPanel/EntityRightPanel';
+import Lineage from '../../components/Lineage/Lineage.component';
+import LineageProvider from '../../components/LineageProvider/LineageProvider';
 import Loader from '../../components/Loader/Loader';
 import { EntityName } from '../../components/Modals/EntityNameModal/EntityNameModal.interface';
 import PageLayoutV1 from '../../components/PageLayoutV1/PageLayoutV1';
@@ -39,6 +40,7 @@ import {
   OperationPermission,
   ResourceEntity,
 } from '../../components/PermissionProvider/PermissionProvider.interface';
+import { SourceType } from '../../components/SearchedData/SearchedData.interface';
 import { QueryVote } from '../../components/TableQueries/TableQueries.interface';
 import TabsLabel from '../../components/TabsLabel/TabsLabel.component';
 import {
@@ -245,11 +247,17 @@ const ContainerPage = () => {
     }
   };
 
-  const handleUpdateContainerData = (updatedData: Container) => {
-    const jsonPatch = compare(omitBy(containerData, isUndefined), updatedData);
+  const handleUpdateContainerData = useCallback(
+    (updatedData: Container) => {
+      const jsonPatch = compare(
+        omitBy(containerData, isUndefined),
+        updatedData
+      );
 
-    return patchContainerDetails(containerData?.id ?? '', jsonPatch);
-  };
+      return patchContainerDetails(containerData?.id ?? '', jsonPatch);
+    },
+    [containerData]
+  );
 
   const handleUpdateDescription = async (updatedDescription: string) => {
     try {
@@ -367,19 +375,23 @@ const ContainerPage = () => {
     }
   };
 
-  const handleToggleDelete = () => {
+  const handleToggleDelete = (version?: number) => {
     setContainerData((prev) => {
       if (!prev) {
         return prev;
       }
 
-      return { ...prev, deleted: !prev?.deleted };
+      return {
+        ...prev,
+        deleted: !prev?.deleted,
+        ...(version ? { version } : {}),
+      };
     });
   };
 
   const afterDeleteAction = useCallback(
-    (isSoftDelete?: boolean) =>
-      isSoftDelete ? handleToggleDelete() : history.push('/'),
+    (isSoftDelete?: boolean, version?: number) =>
+      isSoftDelete ? handleToggleDelete(version) : history.push('/'),
     []
   );
 
@@ -394,14 +406,16 @@ const ContainerPage = () => {
 
   const handleRestoreContainer = async () => {
     try {
-      await restoreContainer(containerData?.id ?? '');
+      const { version: newVersion } = await restoreContainer(
+        containerData?.id ?? ''
+      );
       showSuccessToast(
         t('message.restore-entities-success', {
           entity: t('label.container'),
         }),
         2000
       );
-      handleToggleDelete();
+      handleToggleDelete(newVersion);
     } catch (error) {
       showErrorToast(
         error as AxiosError,
@@ -412,18 +426,61 @@ const ContainerPage = () => {
     }
   };
 
-  const handleExtensionUpdate = async (updatedContainer: Container) => {
-    try {
-      const response = await handleUpdateContainerData(updatedContainer);
-      setContainerData({
-        ...response,
-        tags: sortTagsCaseInsensitive(response.tags ?? []),
-      });
-      getEntityFeedCount();
-    } catch (error) {
-      showErrorToast(error as AxiosError);
-    }
-  };
+  const handleTagUpdate = useCallback(
+    async (updatedContainer: Container) => {
+      if (isUndefined(containerData)) {
+        return;
+      }
+
+      try {
+        const response = await handleUpdateContainerData({
+          ...containerData,
+          tags: updatedContainer.tags,
+        });
+        setContainerData({
+          ...response,
+          tags: sortTagsCaseInsensitive(response.tags ?? []),
+        });
+        getEntityFeedCount();
+      } catch (error) {
+        showErrorToast(error as AxiosError);
+      }
+    },
+    [
+      containerData,
+      handleUpdateContainerData,
+      getEntityFeedCount,
+      setContainerData,
+    ]
+  );
+
+  const handleExtensionUpdate = useCallback(
+    async (updatedContainer: Container) => {
+      if (isUndefined(containerData)) {
+        return;
+      }
+
+      try {
+        const response = await handleUpdateContainerData({
+          ...containerData,
+          extension: updatedContainer.extension,
+        });
+        setContainerData({
+          ...response,
+          tags: sortTagsCaseInsensitive(response.tags ?? []),
+        });
+        getEntityFeedCount();
+      } catch (error) {
+        showErrorToast(error as AxiosError);
+      }
+    },
+    [
+      containerData,
+      handleUpdateContainerData,
+      getEntityFeedCount,
+      setContainerData,
+    ]
+  );
 
   const handleUpdateDataModel = async (
     updatedDataModel: Container['dataModel']
@@ -482,7 +539,7 @@ const ContainerPage = () => {
     if (updatedTags && containerData) {
       const updatedTags = [...(tier ? [tier] : []), ...selectedTags];
       const updatedContainer = { ...containerData, tags: updatedTags };
-      await handleExtensionUpdate(updatedContainer);
+      await handleTagUpdate(updatedContainer);
     }
   };
 
@@ -603,12 +660,14 @@ const ContainerPage = () => {
         label: <TabsLabel id={EntityTabs.LINEAGE} name={t('label.lineage')} />,
         key: EntityTabs.LINEAGE,
         children: (
-          <EntityLineageComponent
-            deleted={deleted}
-            entity={containerData}
-            entityType={EntityType.CONTAINER}
-            hasEditAccess={editLineagePermission}
-          />
+          <LineageProvider>
+            <Lineage
+              deleted={deleted}
+              entity={containerData as SourceType}
+              entityType={EntityType.CONTAINER}
+              hasEditAccess={editLineagePermission}
+            />
+          </LineageProvider>
         ),
       },
       {
@@ -717,6 +776,7 @@ const ContainerPage = () => {
       <Row gutter={[0, 12]}>
         <Col className="p-x-lg" span={24}>
           <DataAssetsHeader
+            isRecursiveDelete
             afterDeleteAction={afterDeleteAction}
             afterDomainUpdateAction={afterDomainUpdateAction}
             dataAsset={containerData}

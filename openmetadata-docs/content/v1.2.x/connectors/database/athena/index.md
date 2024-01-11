@@ -14,7 +14,9 @@ slug: /connectors/database/athena
 | Query Usage        | {% icon iconName="check" /%} |
 | Data Profiler      | {% icon iconName="check" /%} |
 | Data Quality       | {% icon iconName="check" /%} |
-| Stored Procedures            | {% icon iconName="cross" /%} |
+| Stored Procedures  | {% icon iconName="cross" /%} |
+| Owners             | {% icon iconName="cross" /%} |
+| Tags               | {% icon iconName="cross" /%} |
 | DBT                | {% icon iconName="check" /%} |
 | Supported Versions | --                           |
 
@@ -33,7 +35,7 @@ Configure and schedule Athena metadata and profiler workflows from the OpenMetad
 - [Requirements](#requirements)
 - [Metadata Ingestion](#metadata-ingestion)
     - [Service Name](#service-name)
-    - [Connection Options](#connection-options)
+    - [Connection Details](#connection-details)
     - [Metadata Ingestion Options](#metadata-ingestion-options)
 - [Troubleshooting](#troubleshooting)
   - [Workflow Deployment Error](#workflow-deployment-error)

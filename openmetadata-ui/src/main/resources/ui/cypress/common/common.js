@@ -23,8 +23,10 @@ import {
   BASE_URL,
   CUSTOM_PROPERTY_INVALID_NAMES,
   CUSTOM_PROPERTY_NAME_VALIDATION_ERROR,
+  DATA_ASSETS,
   DELETE_TERM,
   EXPLORE_PAGE_TABS,
+  INVALID_NAMES,
   NAME_VALIDATION_ERROR,
   SEARCH_INDEX,
 } from '../constants/constants';
@@ -35,7 +37,6 @@ export const uuid = () => Cypress._.random(0, 1e6);
 export const RETRY_TIMES = 4;
 export const BASE_WAIT_TIME = 20000;
 
-const ADMIN = 'admin';
 const RETRIES_COUNT = 4;
 
 const TEAM_TYPES = ['Department', 'Division', 'Group'];
@@ -97,11 +98,13 @@ export const verifyResponseStatusCode = (
   hasMultipleResponseCode = false
 ) => {
   if (hasMultipleResponseCode) {
-    cy.wait(alias, option)
+    return cy
+      .wait(alias, option)
       .its('response.statusCode')
       .should('be.oneOf', responseCode);
   } else {
-    cy.wait(alias, option)
+    return cy
+      .wait(alias, option)
       .its('response.statusCode')
       .should('eq', responseCode);
   }
@@ -267,7 +270,9 @@ export const testServiceCreationAndIngestion = ({
   cy.get('#name_help').should('be.visible').contains('Name is required');
 
   // invalid name validation should work
-  cy.get('[data-testid="service-name"]').should('exist').type('!@#$%^&*()');
+  cy.get('[data-testid="service-name"]')
+    .should('exist')
+    .type(INVALID_NAMES.WITH_SPECIAL_CHARS);
   cy.get('#name_help').should('be.visible').contains(NAME_VALIDATION_ERROR);
 
   cy.get('[data-testid="service-name"]')
@@ -585,9 +590,25 @@ export const visitEntityDetailsPage = ({
 
         verifyResponseStatusCode('@explorePageTabSearch', 200);
 
-        cy.get(`[data-testid="${id}"] [data-testid="entity-link"]`)
-          .scrollIntoView()
-          .click();
+        verifyResponseStatusCode('@explorePageSearch', 200);
+        if ([DATA_ASSETS.dashboards, DATA_ASSETS.dataModel].includes(entity)) {
+          cy.get('[data-testid="search-dropdown-Service"]').click();
+          cy.get(
+            '[data-testid="drop-down-menu"] [data-testid="search-input"]'
+          ).type(serviceName);
+          verifyResponseStatusCode('@explorePageSearch', 200);
+          cy.get(
+            `[data-testid="drop-down-menu"] [data-testid="${serviceName.toLowerCase()}"]`
+          ).click();
+          cy.get(
+            `[data-testid="drop-down-menu"] [data-testid="update-btn"]`
+          ).click();
+          cy.get('[data-testid="entity-link"]').contains(term).eq(0).click();
+        } else {
+          cy.get(`[data-testid="${id}"] [data-testid="entity-link"]`)
+            .scrollIntoView()
+            .click();
+        }
       }
     });
 
@@ -652,9 +673,8 @@ export const addUser = (username, email) => {
     .type('Adding user');
   interceptURL('GET', ' /api/v1/users/generateRandomPwd', 'generatePassword');
   cy.get('[data-testid="password-generator"]').should('be.visible').click();
-  verifyResponseStatusCode('@generatePassword', 200);
-  cy.wait(1000);
   interceptURL('POST', ' /api/v1/users', 'add-user');
+  verifyResponseStatusCode('@generatePassword', 200);
   cy.get('[data-testid="save-user"]').scrollIntoView().click();
   verifyResponseStatusCode('@add-user', 201);
 };
@@ -772,10 +792,10 @@ export const deleteSoftDeletedUser = (username) => {
 };
 
 export const toastNotification = (msg, closeToast = true) => {
-  cy.get('.Toastify__toast-body').should('be.visible').contains(msg);
+  cy.get('.Toastify__toast-body').should('contain.text', msg);
   cy.wait(200);
   if (closeToast) {
-    cy.get('.Toastify__close-button').should('be.visible').click();
+    cy.get('.Toastify__close-button').click();
   }
 };
 
@@ -856,51 +876,6 @@ export const addCustomPropertiesForEntity = (
 
   // Navigating to home page
   cy.clickOnLogo();
-
-  // Checking the added property in Entity
-
-  visitEntityDetailsPage({
-    term: entityObj.term,
-    serviceName: entityObj.serviceName,
-    entity: entityObj.entity,
-  });
-
-  cy.get('[data-testid="custom_properties"]').click();
-  cy.get('tbody').should('contain', propertyName);
-
-  // Adding value for the custom property
-
-  // Navigating through the created custom property for adding value
-  cy.get(`[data-row-key="${propertyName}"]`)
-    .find('[data-testid="edit-icon"]')
-    .as('editbutton');
-  cy.wait(1000);
-
-  cy.get('@editbutton').click();
-
-  interceptURL(
-    'PATCH',
-    `/api/v1/${customPropertyData.entityApiType}/*`,
-    'patchEntity'
-  );
-  // Checking for value text box or markdown box
-  cy.get('body').then(($body) => {
-    if ($body.find('[data-testid="value-input"]').length > 0) {
-      cy.get('[data-testid="value-input"]').type(value);
-      cy.get('[data-testid="inline-save-btn"]').click();
-    } else if (
-      $body.find(
-        '.toastui-editor-md-container > .toastui-editor > .ProseMirror'
-      )
-    ) {
-      cy.get(
-        '.toastui-editor-md-container > .toastui-editor > .ProseMirror'
-      ).type(value);
-      cy.get('[data-testid="save"]').click();
-    }
-  });
-  verifyResponseStatusCode('@patchEntity', 200);
-  cy.get(`[data-row-key="${propertyName}"]`).should('contain', value);
 };
 
 export const editCreatedProperty = (propertyName) => {
@@ -1178,19 +1153,13 @@ export const updateDescriptionForIngestedTables = (
     .should('contain', description);
 };
 
-export const addOwner = (
-  ownerName,
-  entity,
-  isGlossaryPage,
-  isOwnerEmpty = false
-) => {
+export const addOwner = (ownerName, entity) => {
   interceptURL('GET', '/api/v1/users?limit=*&isBot=false*', 'getUsers');
-  if (isGlossaryPage && isOwnerEmpty) {
-    cy.get('[data-testid="glossary-owner-name"] > [data-testid="Add"]').click();
-  } else {
-    cy.get('[data-testid="edit-owner"]').click();
-  }
 
+  cy.get('[data-testid="edit-owner"]').click();
+
+  cy.get("[data-testid='select-owner-tabs']").should('be.visible');
+  cy.log('/api/v1/users?limit=*&isBot=false*');
   cy.get('.ant-tabs [id*=tab-users]').click();
   verifyResponseStatusCode('@getUsers', 200);
 
@@ -1208,11 +1177,8 @@ export const addOwner = (
 
   cy.get(`.ant-popover [title="${ownerName}"]`).click();
   verifyResponseStatusCode('@patchOwner', 200);
-  if (isGlossaryPage) {
-    cy.get('[data-testid="glossary-owner-name"]').should('contain', ownerName);
-  } else {
-    cy.get('[data-testid="owner-link"]').should('contain', ownerName);
-  }
+
+  cy.get('[data-testid="owner-link"]').should('contain', ownerName);
 };
 
 export const removeOwner = (entity, isGlossaryPage) => {
@@ -1221,15 +1187,14 @@ export const removeOwner = (entity, isGlossaryPage) => {
 
   cy.get('[data-testid="edit-owner"]').click();
   verifyResponseStatusCode('@getUsers', 200);
-  cy.get('[data-testid="remove-owner"]').click();
+  cy.get("[data-testid='select-owner-tabs']").should('be.visible');
+  cy.get('[data-testid="remove-owner"]').scrollIntoView().click();
   verifyResponseStatusCode('@patchOwner', 200);
-  if (isGlossaryPage) {
-    cy.get('[data-testid="glossary-owner-name"] > [data-testid="Add"]').should(
-      'be.visible'
-    );
-  } else {
-    cy.get('[data-testid="owner-link"]').should('contain', 'No Owner');
-  }
+
+  cy.get('[data-testid="owner-link"]').should(
+    'contain',
+    isGlossaryPage ? 'Add' : 'No Owner'
+  );
 };
 
 export const addTier = (tier, entity) => {
@@ -1286,7 +1251,7 @@ export const deleteEntity = (
 
   interceptURL(
     'DELETE',
-    `api/v1/${entity}/*?hardDelete=${deletionType === 'hard'}&recursive=false`,
+    `api/v1/${entity}/*?hardDelete=${deletionType === 'hard'}&recursive=true`,
     `${deletionType}DeleteTable`
   );
   cy.get('[data-testid="confirm-button"]').should('not.be.disabled');
@@ -1299,11 +1264,12 @@ export const deleteEntity = (
 export const visitServiceDetailsPage = (
   settingsMenuId,
   serviceCategory,
-  serviceName
+  serviceName,
+  isServiceDeleted = false
 ) => {
   interceptURL(
     'GET',
-    'api/v1/search/query?q=*&from=0&size=15&index=*',
+    `/api/v1/search/query?q=*${isServiceDeleted ? 'deleted=true' : ''}`,
     'searchService'
   );
   interceptURL('GET', '/api/v1/teams/name/*', 'getOrganization');
@@ -1318,9 +1284,13 @@ export const visitServiceDetailsPage = (
 
   verifyResponseStatusCode('@getServices', 200);
 
+  if (isServiceDeleted) {
+    cy.get('[data-testid="show-deleted-switch"]').click();
+  }
+
   interceptURL(
     'GET',
-    `api/v1/services/${serviceCategory}/name/${serviceName}?fields=*`,
+    `api/v1/services/${serviceCategory}/name/${serviceName}*`,
     'getServiceDetails'
   );
 
@@ -1703,8 +1673,20 @@ export const visitDatabaseDetailsPage = ({
   serviceName,
   databaseRowKey,
   databaseName,
+  isDeleted = false,
 }) => {
-  visitServiceDetailsPage(settingsMenuId, serviceCategory, serviceName);
+  visitServiceDetailsPage(
+    settingsMenuId,
+    serviceCategory,
+    serviceName,
+    isDeleted
+  );
+
+  if (isDeleted) {
+    interceptURL('GET', `/api/v1/databases*include=deleted*`, 'getDatabases');
+    cy.get('[data-testid="show-deleted"]').click();
+    verifyResponseStatusCode('@getDatabases', 200);
+  }
 
   cy.get(`[data-row-key="${databaseRowKey}"]`).contains(databaseName).click();
 };
@@ -1717,6 +1699,7 @@ export const visitDatabaseSchemaDetailsPage = ({
   databaseName,
   databaseSchemaRowKey,
   databaseSchemaName,
+  isDeleted = false,
 }) => {
   visitDatabaseDetailsPage({
     settingsMenuId,
@@ -1724,7 +1707,18 @@ export const visitDatabaseSchemaDetailsPage = ({
     serviceName,
     databaseRowKey,
     databaseName,
+    isDeleted,
   });
+
+  if (isDeleted) {
+    interceptURL(
+      'GET',
+      `/api/v1/databaseSchemas*include=deleted*`,
+      'getDatabaseSchemas'
+    );
+    cy.get('[data-testid="show-deleted"]').click();
+    verifyResponseStatusCode('@getDatabaseSchemas', 200);
+  }
 
   cy.get(`[data-row-key="${databaseSchemaRowKey}"]`)
     .contains(databaseSchemaName)

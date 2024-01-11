@@ -35,12 +35,14 @@ export const OwnerLabel = ({
   onUpdate,
   hasPermission,
   ownerDisplayName,
+  placeHolder,
 }: {
   owner?: EntityReference;
   className?: string;
   onUpdate?: (owner?: EntityReference) => void;
   hasPermission?: boolean;
   ownerDisplayName?: ReactNode;
+  placeHolder?: string;
 }) => {
   const displayName = getEntityName(owner);
   const { t } = useTranslation();
@@ -63,16 +65,17 @@ export const OwnerLabel = ({
         style={{ fontSize: '18px' }}
       />
     ) : (
-      <ProfilePicture
-        displayName={displayName}
-        id={owner.id}
-        key="profile-picture"
-        name={owner.name ?? ''}
-        type="circle"
-        width="18"
-      />
+      <div style={{ flexBasis: '18px' }}>
+        <ProfilePicture
+          displayName={displayName}
+          key="profile-picture"
+          name={owner.name ?? ''}
+          type="circle"
+          width="18"
+        />
+      </div>
     );
-  }, [owner]);
+  }, [owner, displayName]);
 
   return (
     <div className="d-flex gap-2 items-center" data-testid="owner-label">
@@ -96,7 +99,7 @@ export const OwnerLabel = ({
         <Typography.Text
           className={classNames('font-medium text-xs', className)}
           data-testid="owner-link">
-          {t('label.no-entity', { entity: t('label.owner') })}
+          {placeHolder ?? t('label.no-entity', { entity: t('label.owner') })}
         </Typography.Text>
       )}
       {onUpdate && (

@@ -23,6 +23,7 @@ import org.openmetadata.schema.type.FieldChange;
 import org.openmetadata.service.formatter.decorators.MessageDecorator;
 import org.openmetadata.service.formatter.util.FormatterUtil;
 import org.openmetadata.service.resources.feeds.MessageParser;
+import org.openmetadata.service.util.JsonUtils;
 
 public class TestCaseFormatter implements EntityFormatter {
   private static final String TEST_RESULT_FIELD = "testCaseResult";
@@ -42,7 +43,7 @@ public class TestCaseFormatter implements EntityFormatter {
   private String transformTestCaseResult(
       MessageDecorator<?> messageFormatter, FieldChange fieldChange, EntityInterface entity) {
     String testCaseName = entity.getName();
-    TestCaseResult result = (TestCaseResult) fieldChange.getNewValue();
+    TestCaseResult result = JsonUtils.convertValue(fieldChange.getNewValue(), TestCaseResult.class);
     TestCase testCaseEntity = (TestCase) entity;
     if (result != null) {
       String format =
@@ -54,20 +55,21 @@ public class TestCaseFormatter implements EntityFormatter {
       return String.format(format, testCaseName, getStatusMessage(result.getTestCaseStatus()));
     }
     String format =
-        String.format("Test Case %s is updated in %s", messageFormatter.getBold(), messageFormatter.getBold());
+        String.format(
+            "Test Case %s is updated in %s",
+            messageFormatter.getBold(), messageFormatter.getBold());
     return String.format(
-        format, testCaseName, MessageParser.EntityLink.parse(testCaseEntity.getEntityLink()).getEntityFQN());
+        format,
+        testCaseName,
+        MessageParser.EntityLink.parse(testCaseEntity.getEntityLink()).getEntityFQN());
   }
 
   private String getStatusMessage(TestCaseStatus status) {
-    switch (status) {
-      case Success:
-        return "<span style=\"color:#48CA9E\">Passed</span>";
-      case Failed:
-        return "<span style=\"color:#F24822\">Failed</span>";
-      case Aborted:
-        return "<span style=\"color:#FFBE0E\">Aborted</span>";
-    }
-    return status.value();
+    return switch (status) {
+      case Success -> "<span style=\"color:#48CA9E\">Passed</span>";
+      case Failed -> "<span style=\"color:#F24822\">Failed</span>";
+      case Aborted -> "<span style=\"color:#FFBE0E\">Aborted</span>";
+      case Queued -> "<span style=\"color:#959595\">Queued</span>";
+    };
   }
 }

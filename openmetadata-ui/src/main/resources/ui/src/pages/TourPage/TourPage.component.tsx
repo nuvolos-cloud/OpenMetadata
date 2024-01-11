@@ -11,7 +11,6 @@
  *  limitations under the License.
  */
 
-import { observer } from 'mobx-react';
 import React, { useEffect, useMemo } from 'react';
 import Tour from '../../components/AppTour/Tour';
 import { useTourProvider } from '../../components/TourProvider/TourProvider';
@@ -19,7 +18,7 @@ import { TOUR_SEARCH_TERM } from '../../constants/constants';
 import { CurrentTourPageType } from '../../enums/tour.enum';
 import { getTourSteps } from '../../utils/TourUtils';
 import ExplorePageV1Component from '../ExplorePage/ExplorePageV1.component';
-import MyDataPageV1 from '../MyDataPage/MyDataPageV1.component';
+import MyDataPage from '../MyDataPage/MyDataPage.component';
 import TableDetailsPageV1 from '../TableDetailsPageV1/TableDetailsPageV1';
 
 const TourPage = () => {
@@ -42,7 +41,7 @@ const TourPage = () => {
   const currentPageComponent = useMemo(() => {
     switch (currentTourPage) {
       case CurrentTourPageType.MY_DATA_PAGE:
-        return <MyDataPageV1 />;
+        return <MyDataPage />;
 
       case CurrentTourPageType.EXPLORE_PAGE:
         return <ExplorePageV1Component />;
@@ -70,4 +69,4 @@ const TourPage = () => {
   );
 };
 
-export default observer(TourPage);
+export default TourPage;

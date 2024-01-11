@@ -24,7 +24,6 @@ import { ActivityFeedTab } from '../../components/ActivityFeed/ActivityFeedTab/A
 import { withActivityFeed } from '../../components/AppRouter/withActivityFeed';
 import DescriptionV1 from '../../components/common/EntityDescription/DescriptionV1';
 import { DataAssetsHeader } from '../../components/DataAssets/DataAssetsHeader/DataAssetsHeader.component';
-import EntityLineageComponent from '../../components/Entity/EntityLineage/EntityLineage.component';
 import { EntityName } from '../../components/Modals/EntityNameModal/EntityNameModal.interface';
 import PageLayoutV1 from '../../components/PageLayoutV1/PageLayoutV1';
 import TabsLabel from '../../components/TabsLabel/TabsLabel.component';
@@ -48,8 +47,11 @@ import ActivityThreadPanel from '../ActivityFeed/ActivityThreadPanel/ActivityThr
 import { useAuthContext } from '../Auth/AuthProviders/AuthProvider';
 import { CustomPropertyTable } from '../common/CustomPropertyTable/CustomPropertyTable';
 import EntityRightPanel from '../Entity/EntityRightPanel/EntityRightPanel';
+import Lineage from '../Lineage/Lineage.component';
+import LineageProvider from '../LineageProvider/LineageProvider';
 import { usePermissionProvider } from '../PermissionProvider/PermissionProvider';
 import { ResourceEntity } from '../PermissionProvider/PermissionProvider.interface';
+import { SourceType } from '../SearchedData/SearchedData.interface';
 import { MlModelDetailProp } from './MlModelDetail.interface';
 import MlModelFeaturesList from './MlModelFeaturesList';
 
@@ -79,7 +81,7 @@ const MlModelDetail: FC<MlModelDetailProp> = ({
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [feedCount, setFeedCount] = useState<number>(0);
 
-  const [mlModelPermissions, setPipelinePermissions] = useState(
+  const [mlModelPermissions, setMlModelPermissions] = useState(
     DEFAULT_ENTITY_PERMISSION
   );
 
@@ -106,7 +108,7 @@ const MlModelDetail: FC<MlModelDetailProp> = ({
         ResourceEntity.ML_MODEL,
         mlModelDetail.id
       );
-      setPipelinePermissions(entityPermission);
+      setMlModelPermissions(entityPermission);
     } catch (error) {
       showErrorToast(
         t('server.fetch-entity-permissions-error', {
@@ -114,7 +116,7 @@ const MlModelDetail: FC<MlModelDetailProp> = ({
         })
       );
     }
-  }, [mlModelDetail.id, getEntityPermission, setPipelinePermissions]);
+  }, [mlModelDetail.id, getEntityPermission, setMlModelPermissions]);
 
   useEffect(() => {
     if (mlModelDetail.id) {
@@ -211,7 +213,7 @@ const MlModelDetail: FC<MlModelDetailProp> = ({
 
   const handleRestoreMlmodel = async () => {
     try {
-      await restoreMlmodel(mlModelDetail.id);
+      const { version: newVersion } = await restoreMlmodel(mlModelDetail.id);
       showSuccessToast(
         t('message.restore-entities-success', {
           entity: t('label.ml-model'),
@@ -219,7 +221,7 @@ const MlModelDetail: FC<MlModelDetailProp> = ({
         // Autoclose timer
         2000
       );
-      handleToggleDelete();
+      handleToggleDelete(newVersion);
     } catch (error) {
       showErrorToast(
         error as AxiosError,
@@ -348,8 +350,8 @@ const MlModelDetail: FC<MlModelDetailProp> = ({
   };
 
   const afterDeleteAction = useCallback(
-    (isSoftDelete?: boolean) =>
-      isSoftDelete ? handleToggleDelete() : history.push('/'),
+    (isSoftDelete?: boolean, version?: number) =>
+      isSoftDelete ? handleToggleDelete(version) : history.push('/'),
     []
   );
 
@@ -470,12 +472,14 @@ const MlModelDetail: FC<MlModelDetailProp> = ({
         label: <TabsLabel id={EntityTabs.LINEAGE} name={t('label.lineage')} />,
         key: EntityTabs.LINEAGE,
         children: (
-          <EntityLineageComponent
-            deleted={deleted}
-            entity={mlModelDetail}
-            entityType={EntityType.MLMODEL}
-            hasEditAccess={editLineagePermission}
-          />
+          <LineageProvider>
+            <Lineage
+              deleted={deleted}
+              entity={mlModelDetail as SourceType}
+              entityType={EntityType.MLMODEL}
+              hasEditAccess={editLineagePermission}
+            />
+          </LineageProvider>
         ),
       },
       {
@@ -530,6 +534,7 @@ const MlModelDetail: FC<MlModelDetailProp> = ({
       <Row gutter={[0, 12]}>
         <Col className="p-x-lg" span={24}>
           <DataAssetsHeader
+            isRecursiveDelete
             afterDeleteAction={afterDeleteAction}
             afterDomainUpdateAction={updateMlModelDetailsState}
             dataAsset={mlModelDetail}

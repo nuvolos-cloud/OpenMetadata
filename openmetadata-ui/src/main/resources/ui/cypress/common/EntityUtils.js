@@ -101,7 +101,7 @@ export const createSingleLevelEntity = ({
     expect(response.status).to.eq(201);
   });
 
-  entity.forEach((body) => {
+  (Array.isArray(entity) ? entity : [entity]).forEach((body) => {
     cy.request({
       method: 'POST',
       url: `/api/v1/${entityType}`,
@@ -119,7 +119,7 @@ export const createSingleLevelEntity = ({
 export const hardDeleteService = ({ serviceFqn, token, serviceType }) => {
   cy.request({
     method: 'GET',
-    url: `/api/v1/services/${serviceType}/name/${serviceFqn}`,
+    url: `/api/v1/services/${serviceType}/name/${serviceFqn}?include=all`,
     headers: { Authorization: `Bearer ${token}` },
   }).then((response) => {
     cy.request({

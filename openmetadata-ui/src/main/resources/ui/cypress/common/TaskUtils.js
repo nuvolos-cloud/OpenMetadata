@@ -18,7 +18,7 @@ import {
 } from './common';
 
 const owner = 'admin';
-const assignee = 'adam_rodriguez9';
+const assignee = 'adam.matthews2';
 const secondAssignee = 'aaron_johnson0';
 
 export const verifyTaskDetails = (regexPattern) => {
@@ -33,7 +33,7 @@ export const verifyTaskDetails = (regexPattern) => {
 
   cy.get('[data-testid="owner-link"]').should('contain', owner);
 
-  cy.get(`[data-testid="assignee-${assignee}"]`).should('be.visible');
+  cy.get(`[data-testid="${assignee}"]`).should('be.visible');
 };
 
 export const editAssignee = () => {
@@ -47,7 +47,7 @@ export const editAssignee = () => {
   // select value from dropdown
   verifyResponseStatusCode('@suggestApi', 200);
 
-  cy.get(`[data-testid="assignee-option-${secondAssignee}"]`)
+  cy.get(`[data-testid="${secondAssignee}"]`)
     .should('be.visible')
     .trigger('mouseover')
     .trigger('click');
@@ -58,10 +58,10 @@ export const editAssignee = () => {
 
   verifyResponseStatusCode('@editAssignee', 200);
 
-  cy.get(`[data-testid="assignee-${assignee}"]`).should('be.visible');
+  cy.get(`[data-testid="${assignee}"]`).should('be.visible');
 };
 
-export const createDescriptionTask = (value) => {
+export const createDescriptionTask = (value, assigneeDisabled) => {
   interceptURL('POST', 'api/v1/feed', 'createTask');
 
   cy.get('#title').should(
@@ -69,18 +69,27 @@ export const createDescriptionTask = (value) => {
     `Update description for table ${value.term}`
   );
 
-  cy.get('[data-testid="select-assignee"] > .ant-select-selector').type(
-    value.assignee ?? assignee
-  );
-  // select value from dropdown
-  verifyResponseStatusCode('@suggestApi', 200);
+  if (assigneeDisabled) {
+    cy.get('[data-testid="select-assignee"] > .ant-select-selector').contains(
+      value.assignee
+    );
 
-  cy.get(`[data-testid="assignee-option-${value.assignee ?? assignee}"]`)
-    .should('be.visible')
-    .trigger('mouseover')
-    .trigger('click');
+    cy.get(
+      '[data-testid="select-assignee"] > .ant-select-selector input'
+    ).should('be.disabled');
+  } else {
+    cy.get('[data-testid="select-assignee"] > .ant-select-selector').type(
+      value.assignee ?? assignee
+    );
+    // select value from dropdown
+    verifyResponseStatusCode('@suggestApi', 200);
 
-  cy.clickOutside();
+    cy.get(`[data-testid="${value.assignee ?? assignee}"]`)
+      .should('be.visible')
+      .trigger('mouseover')
+      .trigger('click');
+    cy.clickOutside();
+  }
 
   cy.get(descriptionBox).scrollIntoView().clear().type('Updated description');
 

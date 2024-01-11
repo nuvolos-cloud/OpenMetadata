@@ -1,6 +1,8 @@
 package org.openmetadata.service.jdbi3;
 
 import static org.openmetadata.common.utils.CommonUtil.listOrEmpty;
+import static org.openmetadata.schema.type.Include.ALL;
+import static org.openmetadata.service.Entity.TABLE;
 import static org.openmetadata.service.Entity.TEST_CASE;
 import static org.openmetadata.service.Entity.TEST_SUITE;
 import static org.openmetadata.service.util.FullyQualifiedName.quoteName;
@@ -46,9 +48,20 @@ public class TestSuiteRepository extends EntityRepository<TestSuite> {
 
   @Override
   public void setFields(TestSuite entity, EntityUtil.Fields fields) {
-    entity.setPipelines(fields.contains("pipelines") ? getIngestionPipelines(entity) : entity.getPipelines());
-    entity.setSummary(fields.contains("summary") ? getTestCasesExecutionSummary(entity) : entity.getSummary());
+    entity.setPipelines(
+        fields.contains("pipelines") ? getIngestionPipelines(entity) : entity.getPipelines());
+    entity.setSummary(
+        fields.contains("summary") ? getTestCasesExecutionSummary(entity) : entity.getSummary());
     entity.withTests(fields.contains("tests") ? getTestCases(entity) : entity.getTests());
+  }
+
+  @Override
+  public void setInheritedFields(TestSuite testSuite, EntityUtil.Fields fields) {
+    if (Boolean.TRUE.equals(testSuite.getExecutable())) {
+      Table table =
+          Entity.getEntity(TABLE, testSuite.getExecutableEntityReference().getId(), "owner", ALL);
+      inheritOwner(testSuite, fields, table);
+    }
   }
 
   @Override
@@ -58,55 +71,61 @@ public class TestSuiteRepository extends EntityRepository<TestSuite> {
     entity.withTests(fields.contains("tests") ? entity.getTests() : null);
   }
 
-  private TestSummary buildTestSummary(HashMap<String, Integer> testCaseSummary, int total) {
-
+  private TestSummary buildTestSummary(Map<String, Integer> testCaseSummary) {
     return new TestSummary()
         .withAborted(testCaseSummary.getOrDefault(TestCaseStatus.Aborted.toString(), 0))
         .withFailed(testCaseSummary.getOrDefault(TestCaseStatus.Failed.toString(), 0))
         .withSuccess(testCaseSummary.getOrDefault(TestCaseStatus.Success.toString(), 0))
-        .withTotal(total);
+        .withQueued(testCaseSummary.getOrDefault(TestCaseStatus.Queued.toString(), 0))
+        .withTotal(testCaseSummary.values().stream().mapToInt(Integer::valueOf).sum());
   }
 
   @Override
   public void setFullyQualifiedName(TestSuite testSuite) {
     if (testSuite.getExecutableEntityReference() != null) {
       testSuite.setFullyQualifiedName(
-          FullyQualifiedName.add(testSuite.getExecutableEntityReference().getFullyQualifiedName(), "testSuite"));
+          FullyQualifiedName.add(
+              testSuite.getExecutableEntityReference().getFullyQualifiedName(), "testSuite"));
     } else {
       testSuite.setFullyQualifiedName(quoteName(testSuite.getName()));
     }
   }
 
-  private HashMap<String, Integer> getResultSummary(TestSuite testSuite) {
-    HashMap<String, Integer> testCaseSummary = new HashMap<>();
+  private Map<String, Integer> getResultSummary(TestSuite testSuite) {
+    Map<String, Integer> testCaseSummary = new HashMap<>();
+    List<EntityReference> testCases = getTestCases(testSuite);
     for (ResultSummary resultSummary : testSuite.getTestCaseResultSummary()) {
       String status = resultSummary.getStatus().toString();
       testCaseSummary.put(status, testCaseSummary.getOrDefault(status, 0) + 1);
     }
-
+    List<EntityReference> testCasesWithNoResults =
+        testCases.stream()
+            .filter(
+                tc ->
+                    testSuite.getTestCaseResultSummary().stream()
+                        .noneMatch(tcr -> tc.getFullyQualifiedName().equals(tcr.getTestCaseName())))
+            .toList();
+    testCaseSummary.put(TestCaseStatus.Queued.toString(), testCasesWithNoResults.size());
     return testCaseSummary;
   }
 
   private TestSummary getTestCasesExecutionSummary(TestSuite entity) {
-    if (entity.getTestCaseResultSummary().isEmpty()) return new TestSummary();
-    HashMap<String, Integer> testSummary = getResultSummary(entity);
-    return buildTestSummary(testSummary, entity.getTestCaseResultSummary().size());
+    Map<String, Integer> testCaseSummary = getResultSummary(entity);
+    return buildTestSummary(testCaseSummary);
   }
 
   private TestSummary getTestCasesExecutionSummary(List<TestSuite> entities) {
     if (entities.isEmpty()) return new TestSummary();
-
-    HashMap<String, Integer> testsSummary = new HashMap<>();
-    int total = 0;
+    Map<String, Integer> testsSummary = new HashMap<>();
     for (TestSuite testSuite : entities) {
-      HashMap<String, Integer> testSummary = getResultSummary(testSuite);
+      Map<String, Integer> testSummary = getResultSummary(testSuite);
       for (Map.Entry<String, Integer> entry : testSummary.entrySet()) {
-        testsSummary.put(entry.getKey(), testsSummary.getOrDefault(entry.getKey(), 0) + entry.getValue());
+        testsSummary.put(
+            entry.getKey(), testsSummary.getOrDefault(entry.getKey(), 0) + entry.getValue());
       }
-      total += testSuite.getTestCaseResultSummary().size();
+      testSuite.getTestCaseResultSummary().size();
     }
-
-    return buildTestSummary(testsSummary, total);
+    return buildTestSummary(testsSummary);
   }
 
   public TestSummary getTestSummary(UUID testSuiteId) {
@@ -154,15 +173,18 @@ public class TestSuiteRepository extends EntityRepository<TestSuite> {
   public void storeExecutableRelationship(TestSuite testSuite) {
     Table table =
         Entity.getEntityByName(
-            Entity.TABLE, testSuite.getExecutableEntityReference().getFullyQualifiedName(), null, null);
-    addRelationship(table.getId(), testSuite.getId(), Entity.TABLE, TEST_SUITE, Relationship.CONTAINS);
+            Entity.TABLE,
+            testSuite.getExecutableEntityReference().getFullyQualifiedName(),
+            null,
+            null);
+    addRelationship(
+        table.getId(), testSuite.getId(), Entity.TABLE, TEST_SUITE, Relationship.CONTAINS);
   }
 
   public RestUtil.DeleteResponse<TestSuite> deleteLogicalTestSuite(
       SecurityContext securityContext, TestSuite original, boolean hardDelete) {
-    // deleting a logical will delete the test suite and only remove
-    // the relationship to test cases if hardDelete is true. Test Cases
-    // will not be deleted.
+    // deleting a logical will delete the test suite and only remove the relationship to
+    // test cases if hardDelete is true. Test Cases will not be deleted.
     String updatedBy = securityContext.getUserPrincipal().getName();
     preDelete(original, updatedBy);
     setFieldsInternal(original, putFields);

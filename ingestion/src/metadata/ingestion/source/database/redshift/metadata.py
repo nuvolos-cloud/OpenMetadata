@@ -32,7 +32,6 @@ from metadata.generated.schema.entity.data.storedProcedure import (
 )
 from metadata.generated.schema.entity.data.table import (
     ConstraintType,
-    EntityName,
     IntervalType,
     TableConstraint,
     TablePartition,
@@ -41,10 +40,14 @@ from metadata.generated.schema.entity.data.table import (
 from metadata.generated.schema.entity.services.connections.database.redshiftConnection import (
     RedshiftConnection,
 )
+from metadata.generated.schema.entity.services.ingestionPipelines.status import (
+    StackTraceError,
+)
 from metadata.generated.schema.metadataIngestion.workflow import (
     Source as WorkflowSource,
 )
-from metadata.ingestion.api.models import Either, StackTraceError
+from metadata.generated.schema.type.basic import EntityName
+from metadata.ingestion.api.models import Either
 from metadata.ingestion.api.steps import InvalidSourceException
 from metadata.ingestion.ometa.ometa_api import OpenMetadata
 from metadata.ingestion.source.database.common_db_source import (
@@ -259,28 +262,30 @@ class RedshiftSource(StoredProcedureMixin, CommonDbSourceService, MultiDBSource)
         """Prepare the stored procedure payload"""
 
         try:
-            yield Either(
-                right=CreateStoredProcedureRequest(
-                    name=EntityName(__root__=stored_procedure.name),
-                    storedProcedureCode=StoredProcedureCode(
-                        language=Language.SQL,
-                        code=stored_procedure.definition,
-                    ),
-                    databaseSchema=fqn.build(
-                        metadata=self.metadata,
-                        entity_type=DatabaseSchema,
-                        service_name=self.context.database_service,
-                        database_name=self.context.database,
-                        schema_name=self.context.database_schema,
-                    ),
-                )
+            stored_procedure_request = CreateStoredProcedureRequest(
+                name=EntityName(__root__=stored_procedure.name),
+                storedProcedureCode=StoredProcedureCode(
+                    language=Language.SQL,
+                    code=stored_procedure.definition,
+                ),
+                databaseSchema=fqn.build(
+                    metadata=self.metadata,
+                    entity_type=DatabaseSchema,
+                    service_name=self.context.database_service,
+                    database_name=self.context.database,
+                    schema_name=self.context.database_schema,
+                ),
             )
+            yield Either(right=stored_procedure_request)
+
+            self.register_record_stored_proc_request(stored_procedure_request)
+
         except Exception as exc:
             yield Either(
                 left=StackTraceError(
                     name=stored_procedure.name,
                     error=f"Error yielding Stored Procedure [{stored_procedure.name}] due to [{exc}]",
-                    stack_trace=traceback.format_exc(),
+                    stackTrace=traceback.format_exc(),
                 )
             )
 

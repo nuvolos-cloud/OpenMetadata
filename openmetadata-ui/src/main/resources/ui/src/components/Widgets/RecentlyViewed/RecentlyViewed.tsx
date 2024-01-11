@@ -25,8 +25,9 @@ import {
   getRecentlyViewedData,
   prepareLabel,
 } from '../../../utils/CommonUtils';
+import entityUtilClassBase from '../../../utils/EntityUtilClassBase';
 import { getEntityName } from '../../../utils/EntityUtils';
-import { getEntityIcon, getEntityLink } from '../../../utils/TableUtils';
+import { getEntityIcon } from '../../../utils/TableUtils';
 import ErrorPlaceHolder from '../../common/ErrorWithPlaceholder/ErrorPlaceHolder';
 import EntityListSkeleton from '../../Skeleton/MyData/EntityListSkeleton/EntityListSkeleton.component';
 import './recently-viewed.less';
@@ -52,6 +53,7 @@ const RecentlyViewed = ({
             name: item.displayName || prepareLabel(item.entityType, item.fqn),
             fullyQualifiedName: item.fqn,
             type: item.entityType,
+            id: item.id,
           };
         })
         .filter((item) => item.name);
@@ -71,7 +73,7 @@ const RecentlyViewed = ({
   return (
     <Card
       className="recently-viewed-widget-container card-widget"
-      data-testid="recently-viewed-container">
+      data-testid="recently-viewed-widget">
       <EntityListSkeleton
         dataLength={data.length !== 0 ? data.length : 5}
         loading={Boolean(isLoading)}>
@@ -87,9 +89,14 @@ const RecentlyViewed = ({
                 <Space>
                   <DragOutlined
                     className="drag-widget-icon cursor-pointer"
+                    data-testid="drag-widget-button"
                     size={14}
                   />
-                  <CloseOutlined size={14} onClick={handleCloseClick} />
+                  <CloseOutlined
+                    data-testid="remove-widget-button"
+                    size={14}
+                    onClick={handleCloseClick}
+                  />
                 </Space>
               </Col>
             )}
@@ -120,7 +127,7 @@ const RecentlyViewed = ({
                     <div className=" flex items-center">
                       <Link
                         className=""
-                        to={getEntityLink(
+                        to={entityUtilClassBase.getEntityLink(
                           item.type || '',
                           item.fullyQualifiedName as string
                         )}>

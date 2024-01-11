@@ -14,7 +14,9 @@ slug: /connectors/database/bigquery
 | Query Usage        | {% icon iconName="check" /%} |
 | Data Profiler      | {% icon iconName="check" /%} |
 | Data Quality       | {% icon iconName="check" /%} |
-| Stored Procedures            | {% icon iconName="check" /%} |
+| Stored Procedures  | {% icon iconName="check" /%} |
+| Owners             | {% icon iconName="cross" /%} |
+| Tags               | Policy Tags                  |
 | DBT                | {% icon iconName="check" /%} |
 | Supported Versions | --                           |
 
@@ -47,6 +49,7 @@ Configure and schedule BigQuery metadata and profiler workflows from the OpenMet
 To deploy OpenMetadata, check the Deployment guides.
 {%/inlineCallout%}
 
+## Requirements
 ### Data Catalog API Permissions 
 
 - Go to [https://console.cloud.google.com/apis/library/datacatalog.googleapis.com](https://console.cloud.google.com/apis/library/datacatalog.googleapis.com)

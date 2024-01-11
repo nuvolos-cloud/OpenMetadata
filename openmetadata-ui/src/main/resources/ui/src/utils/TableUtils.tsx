@@ -56,25 +56,10 @@ import { SourceType } from '../components/SearchedData/SearchedData.interface';
 import { FQN_SEPARATOR_CHAR } from '../constants/char.constants';
 import {
   DE_ACTIVE_COLOR,
-  getContainerDetailPath,
-  getDashboardDetailsPath,
-  getDatabaseDetailsPath,
-  getDatabaseSchemaDetailsPath,
-  getDataModelDetailsPath,
-  getEditWebhookPath,
-  getMlModelPath,
-  getPipelineDetailsPath,
-  getServiceDetailsPath,
-  getStoredProcedureDetailPath,
-  getTableDetailsPath,
-  getTableTabPath,
-  getTagsDetailsPath,
-  getTopicDetailsPath,
   PRIMERY_COLOR,
   TEXT_BODY_COLOR,
 } from '../constants/constants';
-import { GlobalSettingsMenuCategory } from '../constants/GlobalSettings.constants';
-import { EntityTabs, EntityType, FqnPart } from '../enums/entity.enum';
+import { EntityType, FqnPart } from '../enums/entity.enum';
 import { SearchIndex } from '../enums/search.enum';
 import { ConstraintTypes, PrimaryTableDataTypes } from '../enums/table.enum';
 import { SearchIndexField } from '../generated/entity/data/searchIndex';
@@ -90,15 +75,8 @@ import {
   getTableFQNFromColumnFQN,
   sortTagsCaseInsensitive,
 } from './CommonUtils';
-import {
-  getDataProductsDetailsPath,
-  getDomainDetailsPath,
-  getGlossaryPath,
-  getSettingPath,
-} from './RouterUtils';
-import { getSearchIndexDetailsPath } from './SearchIndexUtils';
 import serviceUtilClassBase from './ServiceUtilClassBase';
-import { getDecodedFqn, ordinalize } from './StringsUtils';
+import { ordinalize } from './StringsUtils';
 import { TableFieldsInfoCommonEntities } from './TableUtils.interface';
 
 export const getUsagePercentile = (pctRank: number, isLiteral = false) => {
@@ -210,117 +188,41 @@ export const getConstraintIcon = ({
   );
 };
 
-export const getEntityLink = (
-  indexType: string,
-  fullyQualifiedName: string
-) => {
-  // encode the FQN for entities that can have "/" in their names
-  fullyQualifiedName = encodeURIComponent(fullyQualifiedName);
-  switch (indexType) {
-    case SearchIndex.TOPIC:
-    case EntityType.TOPIC:
-      return getTopicDetailsPath(getDecodedFqn(fullyQualifiedName));
-
-    case SearchIndex.DASHBOARD:
-    case EntityType.DASHBOARD:
-      return getDashboardDetailsPath(getDecodedFqn(fullyQualifiedName));
-
-    case SearchIndex.PIPELINE:
-    case EntityType.PIPELINE:
-      return getPipelineDetailsPath(getDecodedFqn(fullyQualifiedName));
-
-    case EntityType.DATABASE:
-      return getDatabaseDetailsPath(getDecodedFqn(fullyQualifiedName));
-
-    case EntityType.DATABASE_SCHEMA:
-      return getDatabaseSchemaDetailsPath(getDecodedFqn(fullyQualifiedName));
-
-    case EntityType.GLOSSARY:
-    case EntityType.GLOSSARY_TERM:
-    case SearchIndex.GLOSSARY:
-      return getGlossaryPath(getDecodedFqn(fullyQualifiedName));
-
-    case EntityType.DATABASE_SERVICE:
-    case EntityType.DASHBOARD_SERVICE:
-    case EntityType.MESSAGING_SERVICE:
-    case EntityType.PIPELINE_SERVICE:
-    case EntityType.MLMODEL_SERVICE:
-    case EntityType.METADATA_SERVICE:
-    case EntityType.STORAGE_SERVICE:
-    case EntityType.SEARCH_SERVICE:
-      return getServiceDetailsPath(fullyQualifiedName, `${indexType}s`);
-
-    case EntityType.WEBHOOK:
-      return getEditWebhookPath(fullyQualifiedName);
-
-    case EntityType.TYPE:
-      return getSettingPath(
-        GlobalSettingsMenuCategory.CUSTOM_ATTRIBUTES,
-        `${fullyQualifiedName}s`
-      );
-
-    case EntityType.MLMODEL:
-    case SearchIndex.MLMODEL:
-      return getMlModelPath(fullyQualifiedName);
-
-    case EntityType.CONTAINER:
-    case SearchIndex.CONTAINER:
-      return getContainerDetailPath(getDecodedFqn(fullyQualifiedName));
-    case SearchIndex.TAG:
-      return getTagsDetailsPath(fullyQualifiedName);
-
-    case SearchIndex.DASHBOARD_DATA_MODEL:
-    case EntityType.DASHBOARD_DATA_MODEL:
-      return getDataModelDetailsPath(getDecodedFqn(fullyQualifiedName));
-
-    case SearchIndex.STORED_PROCEDURE:
-    case EntityType.STORED_PROCEDURE:
-      return getStoredProcedureDetailPath(getDecodedFqn(fullyQualifiedName));
-
-    case EntityType.TEST_CASE:
-      return `${getTableTabPath(
-        getTableFQNFromColumnFQN(fullyQualifiedName),
-        EntityTabs.PROFILER
-      )}?activeTab=Data Quality`;
-
-    case EntityType.SEARCH_INDEX:
-    case SearchIndex.SEARCH_INDEX:
-      return getSearchIndexDetailsPath(fullyQualifiedName);
-
-    case EntityType.DOMAIN:
-    case SearchIndex.DOMAIN:
-      return getDomainDetailsPath(fullyQualifiedName);
-
-    case EntityType.DATA_PRODUCT:
-    case SearchIndex.DATA_PRODUCT:
-      return getDataProductsDetailsPath(fullyQualifiedName);
-
-    case SearchIndex.TABLE:
-    case EntityType.TABLE:
-    default:
-      return getTableDetailsPath(getDecodedFqn(fullyQualifiedName));
-  }
-};
-
 export const getServiceIcon = (source: SourceType) => {
   if (source.entityType === EntityType.GLOSSARY_TERM) {
-    return <GlossaryIcon className="h-7" style={{ color: DE_ACTIVE_COLOR }} />;
+    return (
+      <GlossaryIcon
+        className="service-icon h-7"
+        style={{ color: DE_ACTIVE_COLOR }}
+      />
+    );
   } else if (source.entityType === EntityType.TAG) {
     return (
-      <ClassificationIcon className="h-7" style={{ color: DE_ACTIVE_COLOR }} />
+      <ClassificationIcon
+        className="service-icon h-7"
+        style={{ color: DE_ACTIVE_COLOR }}
+      />
     );
   } else if (source.entityType === EntityType.DATA_PRODUCT) {
     return (
-      <DataProductIcon className="h-7" style={{ color: DE_ACTIVE_COLOR }} />
+      <DataProductIcon
+        className="service-icon h-7"
+        style={{ color: DE_ACTIVE_COLOR }}
+      />
     );
   } else if (source.entityType === EntityType.DOMAIN) {
-    return <DomainIcon className="h-7" style={{ color: DE_ACTIVE_COLOR }} />;
+    return (
+      <DomainIcon
+        className="service-icon h-7"
+        style={{ color: DE_ACTIVE_COLOR }}
+      />
+    );
   } else {
     return (
       <img
         alt="service-icon"
-        className="inline h-7"
-        src={serviceUtilClassBase.getServiceTypeLogo(source.serviceType ?? '')}
+        className="inline service-icon h-7"
+        src={serviceUtilClassBase.getServiceTypeLogo(source)}
       />
     );
   }
@@ -489,23 +391,23 @@ export function getTableExpandableConfig<T>(
   const expandableConfig: ExpandableConfig<T> = {
     expandIcon: ({ expanded, onExpand, expandable, record }) =>
       expandable ? (
-        <div className="d-inline-flex items-center">
+        <>
           {isDraggable && (
-            <IconDrag className="m-r-xs drag-icon" height={12} width={12} />
+            <IconDrag className="m-r-xs drag-icon" height={12} width={8} />
           )}
           <Icon
-            className="m-r-xs"
+            className="m-r-xs vertical-baseline"
             component={expanded ? IconDown : IconRight}
             data-testid="expand-icon"
             style={{ fontSize: '10px', color: TEXT_BODY_COLOR }}
             onClick={(e) => onExpand(record, e)}
           />
-        </div>
+        </>
       ) : (
         isDraggable && (
           <>
-            <IconDrag className="m-r-xs drag-icon" height={12} width={12} />
-            <div className="expand-cell-empty-icon-container" />
+            <IconDrag className="m-r-xs drag-icon" height={12} width={8} />
+            <span className="expand-cell-empty-icon-container" />
           </>
         )
       ),

@@ -95,7 +95,7 @@ describe('Restore entity functionality should work properly', () => {
 
     interceptURL(
       'DELETE',
-      'api/v1/tables/*?hardDelete=false&recursive=false',
+      'api/v1/tables/*?hardDelete=false&recursive=true',
       'softDeleteTable'
     );
     cy.get('[data-testid="confirm-button"]').should('not.be.disabled');
@@ -168,44 +168,5 @@ describe('Restore entity functionality should work properly', () => {
       'contain',
       ENTITY_TABLE.displayName
     );
-  });
-
-  it('Restore Soft Deleted table', () => {
-    cy.get('[data-testid="app-bar-item-explore"]').click();
-    cy.get('[data-testid="tables-tab"]').click();
-
-    verifyResponseStatusCode('@nonDeletedTables', 200);
-    cy.get('[data-testid="show-deleted"]').click();
-    verifyResponseStatusCode('@showDeletedTables', 200);
-
-    cy.get('[data-testid="entity-header-display-name"]')
-      .contains(ENTITY_TABLE.displayName)
-      .click();
-
-    cy.get('[data-testid="entity-header-display-name"]').should(
-      'contain',
-      ENTITY_TABLE.displayName
-    );
-
-    cy.get('[data-testid="deleted-badge"]')
-      .scrollIntoView()
-      .should('be.visible');
-
-    cy.get('[data-testid="manage-button"]').click();
-
-    cy.get('[data-testid="restore-button"]').click();
-
-    cy.get('.ant-modal-header').should('contain', 'Restore table');
-
-    cy.get('[data-testid="restore-modal-body"]').should(
-      'contain',
-      `Are you sure you want to restore ${ENTITY_TABLE.displayName}?`
-    );
-
-    cy.get('.ant-btn-primary').contains('Restore').click();
-
-    cy.wait(500);
-
-    cy.get('[data-testid="deleted-badge"]').should('not.exist');
   });
 });

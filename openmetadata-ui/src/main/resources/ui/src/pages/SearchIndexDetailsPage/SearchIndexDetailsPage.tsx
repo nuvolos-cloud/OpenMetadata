@@ -30,8 +30,9 @@ import DescriptionV1 from '../../components/common/EntityDescription/Description
 import ErrorPlaceHolder from '../../components/common/ErrorWithPlaceholder/ErrorPlaceHolder';
 import QueryViewer from '../../components/common/QueryViewer/QueryViewer.component';
 import { DataAssetsHeader } from '../../components/DataAssets/DataAssetsHeader/DataAssetsHeader.component';
-import EntityLineageComponent from '../../components/Entity/EntityLineage/EntityLineage.component';
 import EntityRightPanel from '../../components/Entity/EntityRightPanel/EntityRightPanel';
+import Lineage from '../../components/Lineage/Lineage.component';
+import LineageProvider from '../../components/LineageProvider/LineageProvider';
 import Loader from '../../components/Loader/Loader';
 import { EntityName } from '../../components/Modals/EntityNameModal/EntityNameModal.interface';
 import PageLayoutV1 from '../../components/PageLayoutV1/PageLayoutV1';
@@ -468,12 +469,14 @@ function SearchIndexDetailsPage() {
         label: <TabsLabel id={EntityTabs.LINEAGE} name={t('label.lineage')} />,
         key: EntityTabs.LINEAGE,
         children: (
-          <EntityLineageComponent
-            deleted={searchIndexDetails?.deleted}
-            entity={searchIndexDetails as SourceType}
-            entityType={EntityType.SEARCH_INDEX}
-            hasEditAccess={editLineagePermission}
-          />
+          <LineageProvider>
+            <Lineage
+              deleted={deleted}
+              entity={searchIndexDetails as SourceType}
+              entityType={EntityType.SEARCH_INDEX}
+              hasEditAccess={editLineagePermission}
+            />
+          </LineageProvider>
         ),
       },
       {
@@ -543,26 +546,30 @@ function SearchIndexDetailsPage() {
     [searchIndexDetails, onSearchIndexUpdate, searchIndexTags]
   );
 
-  const handleToggleDelete = () => {
+  const handleToggleDelete = (version?: number) => {
     setSearchIndexDetails((prev) => {
       if (!prev) {
         return prev;
       }
 
-      return { ...prev, deleted: !prev?.deleted };
+      return {
+        ...prev,
+        deleted: !prev?.deleted,
+        ...(version ? { version } : {}),
+      };
     });
   };
 
   const handleRestoreSearchIndex = async () => {
     try {
-      await restoreSearchIndex(searchIndexId);
+      const { version: newVersion } = await restoreSearchIndex(searchIndexId);
       showSuccessToast(
         t('message.restore-entities-success', {
           entity: t('label.search-index'),
         }),
         2000
       );
-      handleToggleDelete();
+      handleToggleDelete(newVersion);
     } catch (error) {
       showErrorToast(
         error as AxiosError,
@@ -654,8 +661,8 @@ function SearchIndexDetailsPage() {
   }, [version]);
 
   const afterDeleteAction = useCallback(
-    (isSoftDelete?: boolean) =>
-      isSoftDelete ? handleToggleDelete() : history.push('/'),
+    (isSoftDelete?: boolean, version?: number) =>
+      isSoftDelete ? handleToggleDelete(version) : history.push('/'),
     []
   );
 
@@ -723,6 +730,7 @@ function SearchIndexDetailsPage() {
       <Row gutter={[0, 12]}>
         <Col className="p-x-lg" data-testid="entity-page-header" span={24}>
           <DataAssetsHeader
+            isRecursiveDelete
             afterDeleteAction={afterDeleteAction}
             afterDomainUpdateAction={afterDomainUpdateAction}
             dataAsset={searchIndexDetails}

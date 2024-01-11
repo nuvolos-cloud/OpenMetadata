@@ -16,15 +16,6 @@ import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import TasksDAGView from './TasksDAGView';
 
-/**
- * mock implementation of ResizeObserver
- */
-window.ResizeObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
-}));
-
 const mockNodes = [
   {
     className: 'leaf-node Success',
@@ -73,15 +64,11 @@ const TasksDAGViewProps = {
 
 jest.mock('../../utils/EntityLineageUtils', () => ({
   dragHandle: jest.fn(),
-  getDeletedLineagePlaceholder: jest
-    .fn()
-    .mockReturnValue(<p>Task data is not available for deleted entities.</p>),
   getHeaderLabel: jest.fn().mockReturnValue(<p>Header label</p>),
   getLayoutedElements: jest.fn().mockImplementation(() => ({
     node: mockNodes,
     edge: mockEdges,
   })),
-  getLineageData: jest.fn().mockReturnValue([]),
   getModalBodyText: jest.fn(),
   onLoad: jest.fn(),
   onNodeContextMenu: jest.fn(),

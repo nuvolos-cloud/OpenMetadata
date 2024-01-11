@@ -22,7 +22,6 @@ import React, {
   useState,
 } from 'react';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
-import AppState from '../../AppState';
 import { withAdvanceSearch } from '../../components/AppRouter/withAdvanceSearch';
 import { useAdvanceSearch } from '../../components/Explore/AdvanceSearchProvider/AdvanceSearchProvider.component';
 import {
@@ -38,19 +37,23 @@ import { getExplorePath, PAGE_SIZE } from '../../constants/constants';
 import {
   COMMON_FILTERS_FOR_DIFFERENT_TABS,
   INITIAL_SORT_FIELD,
-  tabsInfo,
 } from '../../constants/explore.constants';
 import {
   mockSearchData,
   MOCK_EXPLORE_PAGE_COUNT,
 } from '../../constants/mockTourData.constants';
 import { SORT_ORDER } from '../../enums/common.enum';
+import { EntityType } from '../../enums/entity.enum';
 import { SearchIndex } from '../../enums/search.enum';
 import { Aggregations, SearchResponse } from '../../interface/search.interface';
 import { searchQuery } from '../../rest/searchAPI';
 import { getCountBadge } from '../../utils/CommonUtils';
-import { findActiveSearchIndex } from '../../utils/Explore.utils';
+import {
+  findActiveSearchIndex,
+  getSearchIndexFromEntityType,
+} from '../../utils/Explore.utils';
 import { getCombinedQueryFilterObject } from '../../utils/ExplorePage/ExplorePageUtils';
+import searchClassBase from '../../utils/SearchClassBase';
 import { escapeESReservedCharacters } from '../../utils/StringsUtils';
 import { showErrorToast } from '../../utils/ToastUtils';
 import {
@@ -60,9 +63,11 @@ import {
 } from './ExplorePage.interface';
 
 const ExplorePageV1: FunctionComponent = () => {
+  const tabsInfo = searchClassBase.getTabsInfo();
   const location = useLocation();
   const history = useHistory();
   const { isTourOpen } = useTourProvider();
+  const TABS_SEARCH_INDEXES = Object.keys(tabsInfo) as ExploreSearchIndex[];
 
   const { tab } = useParams<UrlParams>();
 
@@ -311,7 +316,9 @@ const ExplorePageV1: FunctionComponent = () => {
     setIsLoading(true);
     Promise.all([
       searchQuery({
-        query: escapeESReservedCharacters(searchQueryParam),
+        query: !isEmpty(searchQueryParam)
+          ? `*${escapeESReservedCharacters(searchQueryParam)}*`
+          : '',
         searchIndex,
         queryFilter: combinedQueryFilter,
         sortField: sortValue,
@@ -336,11 +343,17 @@ const ExplorePageV1: FunctionComponent = () => {
         fetchSource: false,
         filters: '',
       }).then((res) => {
-        const buckets = res.aggregations[`index_count`].buckets;
+        const buckets = res.aggregations['entityType'].buckets;
         const counts: Record<string, number> = {};
+
         buckets.forEach((item) => {
-          if (item) {
-            counts[item.key ?? ''] = item.doc_count;
+          const searchIndexKey =
+            item && getSearchIndexFromEntityType(item.key as EntityType);
+
+          if (
+            TABS_SEARCH_INDEXES.includes(searchIndexKey as ExploreSearchIndex)
+          ) {
+            counts[searchIndexKey ?? ''] = item.doc_count;
           }
         });
         setSearchHitCounts(counts as SearchHitCounts);
@@ -378,10 +391,6 @@ const ExplorePageV1: FunctionComponent = () => {
     },
     [setAdvancedSearchQuickFilters, history, parsedSearch]
   );
-
-  useEffect(() => {
-    AppState.updateExplorePageTab(tab);
-  }, [tab]);
 
   return (
     <ExploreV1

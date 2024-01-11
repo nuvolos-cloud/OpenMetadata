@@ -10,3 +10,4 @@ SET json = jsonb_set(
 WHERE json #>> '{pipelineType}' = 'metadata'
 AND json #>> '{sourceConfig,config,type}' = 'DatabaseMetadata'
 AND json #>> '{sourceConfig,config,viewParsingTimeoutLimit}' is not null;
+

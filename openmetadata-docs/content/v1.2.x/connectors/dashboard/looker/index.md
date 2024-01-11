@@ -12,6 +12,7 @@ slug: /connectors/dashboard/looker
 | Owners     | {% icon iconName="check" /%} |
 | Tags       | {% icon iconName="cross" /%} |
 | Datamodels | {% icon iconName="check" /%} |
+| Projects   | {% icon iconName="cross" /%} |
 | Lineage    | {% icon iconName="check" /%} |
 
 In this section, we provide guides and references to use the Looker connector.
@@ -44,6 +45,9 @@ with read only access to the repository. You can follow these steps from the Git
 
 The GitHub credentials are completely optional. Just note that without them, we won't be able to ingest metadata
 out of LookML Views, including their lineage to the source databases.
+
+Moreover, Looker lineage only supports LookML views configured with `sql_table_name` and `derived_table` in plain SQL.
+We do not yet support liquid variables.
 
 {% /note %}
 

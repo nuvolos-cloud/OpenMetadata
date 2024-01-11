@@ -40,6 +40,7 @@ import {
 } from '../../../rest/testAPI';
 import { getEntityName } from '../../../utils/EntityUtils';
 import { getTestSuitePath } from '../../../utils/RouterUtils';
+import { getEncodedFqn } from '../../../utils/StringsUtils';
 import { showErrorToast } from '../../../utils/ToastUtils';
 import ErrorPlaceHolder from '../../common/ErrorWithPlaceholder/ErrorPlaceHolder';
 import FilterTablePlaceHolder from '../../common/ErrorWithPlaceholder/FilterTablePlaceHolder';
@@ -83,7 +84,7 @@ export const TestSuites = ({ summaryPanel }: { summaryPanel: ReactNode }) => {
               data-testid={name}
               to={{
                 pathname: getTableTabPath(
-                  encodeURIComponent(
+                  getEncodedFqn(
                     record.executableEntityReference?.fullyQualifiedName ?? ''
                   ),
                   EntityTabs.PROFILER
@@ -99,7 +100,7 @@ export const TestSuites = ({ summaryPanel }: { summaryPanel: ReactNode }) => {
             <Link
               data-testid={name}
               to={getTestSuitePath(
-                encodeURIComponent(record.fullyQualifiedName ?? record.name)
+                getEncodedFqn(record.fullyQualifiedName ?? record.name)
               )}>
               {getEntityName(record)}
             </Link>
@@ -145,6 +146,7 @@ export const TestSuites = ({ summaryPanel }: { summaryPanel: ReactNode }) => {
       const result = await getListTestSuites({
         ...params,
         fields: 'owner,summary',
+        includeEmptyTestSuites: !(tab === DataQualityPageTabs.TABLES),
         testSuiteType:
           tab === DataQualityPageTabs.TABLES
             ? TestSuiteType.executable

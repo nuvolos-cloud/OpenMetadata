@@ -22,19 +22,6 @@ site_menu:
     url: /deployment/bare-metal
   - category: Deployment / Bare Metal Deployment / Enable Security
     url: /deployment/bare-metal/security
-  
-  - category: Releases
-    url: /releases
-    color: violet-70
-    icon: overview
-  - category: Releases / Latest Release
-    url: /releases/latest-release
-  - category: Releases / Supported Releases
-    url: /releases/supported
-  - category: Releases / Roadmap
-    url: /releases/roadmap
-  - category: Releases / All Releases
-    url: /releases/all-releases
 
   - category: Deployment / Docker Deployment
     url: /deployment/docker
@@ -50,7 +37,7 @@ site_menu:
   - category: Deployment / Kubernetes Deployment / GKE
     url: /deployment/kubernetes/gke
   - category: Deployment / Kubernetes Deployment / On Premises
-    url: /deployment/kubernetes/onprem
+    url: /deployment/kubernetes/on-prem
   - category: Deployment / Kubernetes Deployment / Enable Security
     url: /deployment/kubernetes/security
   - category: Deployment / Kubernetes Deployment / Helm Values
@@ -202,6 +189,180 @@ site_menu:
   - category: Deployment / Backup & Restore Metadata
     url: /deployment/backup-restore-metadata
 
+  - category: How-to Guides
+    url: /how-to-guides
+    color: violet-70
+    icon: openmetadata
+
+  - category: How-to Guides / Admin Guide
+    url: /how-to-guides/admin-guide
+  - category: How-to Guides / Admin Guide / How to Ingest Metadata
+    url: /how-to-guides/admin-guide/how-to-ingest-metadata
+  - category: How-to Guides / Admin Guide / How to Delete a Service Connection
+    url: /how-to-guides/admin-guide/delete-service-connection
+  - category: How-to Guides / Admin Guide / Manage Teams and Users
+    url: /how-to-guides/admin-guide/teams-and-users
+  - category: How-to Guides / Admin Guide / Manage Teams and Users / Team Structure in OpenMetadata
+    url: /how-to-guides/admin-guide/teams-and-users/team-structure-openmetadata
+  - category: How-to Guides / Admin Guide / Manage Teams and Users / How to Add a Team
+    url: /how-to-guides/admin-guide/teams-and-users/add-team
+  - category: How-to Guides / Admin Guide / Manage Teams and Users / How to Invite Users to OpenMetadata
+    url: /how-to-guides/admin-guide/teams-and-users/invite-users
+  - category: How-to Guides / Admin Guide / Manage Teams and Users / How to Add Users to Teams
+    url: /how-to-guides/admin-guide/teams-and-users/add-users
+  - category: How-to Guides / Admin Guide / Manage Teams and Users / How to Change the Team Type
+    url: /how-to-guides/admin-guide/teams-and-users/change-team-type
+  - category: How-to Guides / Admin Guide / Advanced Guide for Roles and Policies
+    url: /how-to-guides/admin-guide/roles-policies
+  - category: How-to Guides / Admin Guide / Advanced Guide for Roles and Policies / Building Blocks of Authorization - Rules, Policies, and Roles
+    url: /how-to-guides/admin-guide/roles-policies/authorization
+  - category: How-to Guides / Admin Guide / Advanced Guide for Roles and Policies / Use Cases - Creating Roles & Policies in OpenMetadata
+    url: /how-to-guides/admin-guide/roles-policies/use-cases
+  - category: How-to Guides / Admin Guide / CLI Ingestion with Basic Auth
+    url: /how-to-guides/admin-guide/cli-ingestion-with-basic-auth
+  - category: How-to Guides / Admin Guide / How to Add Custom Logo
+    url: /how-to-guides/admin-guide/how-to-add-custom-logo
+
+  - category: How-to Guides / Guide for Data Users
+    url: /how-to-guides/guide-for-data-users
+  - category: How-to Guides / Guide for Data Users / Understanding the Basics of OpenMetadata
+    url: /how-to-guides/guide-for-data-users/basics-openmetadata
+  - category: How-to Guides / Guide for Data Users / Overview of Data Assets
+    url: /how-to-guides/guide-for-data-users/data-asset-tabs
+  - category: How-to Guides / Guide for Data Users / How to Add Description using Markdown
+    url: /how-to-guides/guide-for-data-users/description
+  - category: How-to Guides / Guide for Data Users / How to Request for Description
+    url: /how-to-guides/guide-for-data-users/request-description
+  - category: How-to Guides / Guide for Data Users / How to Assign or Change Data Ownership
+    url: /how-to-guides/guide-for-data-users/data-ownership
+  - category: How-to Guides / Guide for Data Users / How to Follow a Data Asset
+    url: /how-to-guides/guide-for-data-users/follow-data-asset
+  - category: How-to Guides / Guide for Data Users / How to Add Tags
+    url: /how-to-guides/guide-for-data-users/tags
+  - category: How-to Guides / Guide for Data Users / How to Request for Tags
+    url: /how-to-guides/guide-for-data-users/request-tags
+  - category: How-to Guides / Guide for Data Users / How to Add Glossary Terms
+    url: /how-to-guides/guide-for-data-users/glossary
+  - category: How-to Guides / Guide for Data Users / How to Create a Custom Property for a Data Asset
+    url: /how-to-guides/guide-for-data-users/custom
+  - category: How-to Guides / Guide for Data Users / Overview of Announcements
+    url: /how-to-guides/guide-for-data-users/announcements
+  - category: How-to Guides / Guide for Data Users / How to Create an Announcement
+    url: /how-to-guides/guide-for-data-users/add-announcement
+  - category: How-to Guides / Guide for Data Users / Data Asset Versioning
+    url: /how-to-guides/guide-for-data-users/versions
+  - category: How-to Guides / Guide for Data Users / How to Delete a Data Asset
+    url: /how-to-guides/guide-for-data-users/delete
+
+  - category: How-to Guides / Data Discovery
+    url: /how-to-guides/data-discovery
+  - category: How-to Guides / Data Discovery / How to Discover Assets of Interest
+    url: /how-to-guides/data-discovery/discover
+  - category: How-to Guides / Data Discovery / Get a Quick Glance of the Data Assets
+    url: /how-to-guides/data-discovery/preview
+  - category: How-to Guides / Data Discovery / Detailed View of the Data Assets
+    url: /how-to-guides/data-discovery/details
+  - category: How-to Guides / Data Discovery / Add Complex Queries using Advanced Search
+    url: /how-to-guides/data-discovery/advanced
+
+  - category: How-to Guides / Data Collaboration
+    url: /how-to-guides/data-collaboration
+  - category: How-to Guides / Data Collaboration / Understanding Activity Feeds
+    url: /how-to-guides/data-collaboration/activity-feeds
+  - category: How-to Guides / Data Collaboration / How to Request for Description
+    url: /how-to-guides/data-collaboration/request-description
+  - category: How-to Guides / Data Collaboration / How to Request for Tags
+    url: /how-to-guides/data-collaboration/request-tags
+  - category: How-to Guides / Data Collaboration / Overview of Announcements
+    url: /how-to-guides/data-collaboration/announcements
+  - category: How-to Guides / Data Collaboration / How to Create an Announcement
+    url: /how-to-guides/data-collaboration/add-announcement
+
+  - category: How-to Guides / Data Quality and Profiler
+    url: /how-to-guides/data-quality-profiler
+  - category: How-to Guides / Data Quality and Profiler / Profiler and Data Quality Tab
+    url: /how-to-guides/data-quality-profiler/tab
+  - category: How-to Guides / Data Quality and Profiler / How to Write and Deploy No-Code Test Cases
+    url: /how-to-guides/data-quality-profiler/test
+  - category: How-to Guides / Data Quality and Profiler / How to Set Alerts for Test Case Fails
+    url: /how-to-guides/data-quality-profiler/alerts
+
+  - category: How-to Guides / Data Lineage
+    url: /how-to-guides/data-lineage
+  - category: How-to Guides / Data Lineage / How to Deploy a Lineage Workflow
+    url: /how-to-guides/data-lineage/workflow
+  - category: How-to Guides / Data Lineage / Explore the Lineage View
+    url: /how-to-guides/data-lineage/explore
+  - category: How-to Guides / Data Lineage / How Column-Level Lineage Works
+    url: /how-to-guides/data-lineage/column
+  - category: How-to Guides / Data Lineage / How to Manually Add or Edit Lineage
+    url: /how-to-guides/data-lineage/manual
+
+  - category: How-to Guides / Data Insights
+    url: /how-to-guides/data-insights
+  - category: How-to Guides / Data Insights / What is Tiering
+    url: /how-to-guides/data-insights/tiering
+  - category: How-to Guides / Data Insights / Set Up Data Insights Ingestion
+    url: /how-to-guides/data-insights/ingestion
+  - category: How-to Guides / Data Insights / Key Performance Indicators (KPI)
+    url: /how-to-guides/data-insights/kpi
+  - category: How-to Guides / Data Insights / Data Insights Report
+    url: /how-to-guides/data-insights/report
+  - category: How-to Guides / Data Insights / Cost Analysis
+    url: /how-to-guides/data-insights/cost-analysis
+  - category: How-to Guides / Data Insights / Configure the Data Insights Report
+    url: /how-to-guides/data-insights/email-report 
+  - category: How-to Guides / Data Insights / How to Transform the Data Culture of Your Company
+    url: /how-to-guides/data-insights/data-culture
+
+  - category: How-to Guides / Data Governance
+    url: /how-to-guides/data-governance
+  - category: How-to Guides / Data Governance / Glossary
+    url: /how-to-guides/data-governance/glossary
+  - category: How-to Guides / Data Governance / Glossary / What is a Glossary Term
+    url: /how-to-guides/data-governance/glossary/glossary-term
+  - category: How-to Guides / Data Governance / Glossary / How to Setup a Glossary
+    url: /how-to-guides/data-governance/glossary/setup
+  - category: How-to Guides / Data Governance / Glossary / How to Create Glossary Terms
+    url: /how-to-guides/data-governance/glossary/create-terms
+  - category: How-to Guides / Data Governance / Glossary / How to Bulk Import a Glossary
+    url: /how-to-guides/data-governance/glossary/import
+  - category: How-to Guides / Data Governance / Glossary / Glossary Approval Workflow
+    url: /how-to-guides/data-governance/glossary/approval  
+  - category: How-to Guides / Data Governance / Glossary / Glossary Styling
+    url: /how-to-guides/data-governance/glossary/styling 
+  - category: How-to Guides / Data Governance / Glossary / How to Add Assets to Glossary Terms
+    url: /how-to-guides/data-governance/glossary/assets
+  - category: How-to Guides / Data Governance / Glossary / Best Practices for Glossary
+    url: /how-to-guides/data-governance/glossary/best-practices
+  - category: How-to Guides / Data Governance / Classification
+    url: /how-to-guides/data-governance/classification
+  - category: How-to Guides / Data Governance / Classification / Overview of Classification
+    url: /how-to-guides/data-governance/classification/overview
+  - category: How-to Guides / Data Governance / Classification / How to Classify Data Assets
+    url: /how-to-guides/data-governance/classification/assets
+  - category: How-to Guides / Data Governance / Classification / How to Request for Classification Tags
+    url: /how-to-guides/data-governance/classification/request-tags
+  - category: How-to Guides / Data Governance / Classification / Auto-Classification in OpenMetadata
+    url: /how-to-guides/data-governance/classification/auto
+  - category: How-to Guides / Data Governance / Classification / What are Tiers
+    url: /how-to-guides/data-governance/classification/tiers
+  - category: How-to Guides / Data Governance / Classification / Best Practices for Classification
+    url: /how-to-guides/data-governance/classification/best-practices
+
+  - category: Releases
+    url: /releases
+    color: violet-70
+    icon: overview
+  - category: Releases / Latest Release
+    url: /releases/latest-release
+  - category: Releases / Supported Releases
+    url: /releases/supported
+  - category: Releases / Roadmap
+    url: /releases/roadmap
+  - category: Releases / All Releases
+    url: /releases/all-releases
+
   - category: Connectors
     url: /connectors
     color: violet-70
@@ -351,6 +512,12 @@ site_menu:
     url: /connectors/database/trino
   - category: Connectors / Database / Trino / Run Externally
     url: /connectors/database/trino/yaml
+  - category: Connectors / Database / Unity Catalog
+    url: /connectors/database/unity-catalog
+  - category: Connectors / Database / Unity Catalog / Run Externally
+    url: /connectors/database/unity-catalog/yaml
+  - category: Connectors / Database / Unity Catalog / Troubleshooting
+    url: /connectors/database/unity-catalog/troubleshooting
   - category: Connectors / Database / Vertica
     url: /connectors/database/vertica
   - category: Connectors / Database / Vertica / Run Externally
@@ -508,6 +675,10 @@ site_menu:
     url: /connectors/metadata/atlas
   - category: Connectors / Metadata / Atlas / Run Externally
     url: /connectors/metadata/atlas/yaml
+  - category: Connectors / Metadata / Alation
+    url: /connectors/metadata/alation
+  - category: Connectors / Metadata / Alation / Run Externally
+    url: /connectors/metadata/alation/yaml
 
   - category: Connectors / Custom Connectors
     url: /connectors/custom-connectors
@@ -586,156 +757,6 @@ site_menu:
     url: /connectors/ingestion/deployment
   - category: Connectors / Ingestion / Best Practices
     url: /connectors/ingestion/best-practices
-
-  - category: How to Guides
-    url: /how-to-guides
-    color: violet-70
-    icon: openmetadata
-
-  - category: How to Guides / Admin Guide
-    url: /how-to-guides/admin-guide
-  - category: How to Guides / Admin Guide / How to Ingest Metadata
-    url: /how-to-guides/admin-guide/how-to-ingest-metadata
-  - category: How to Guides / Admin Guide / How to Delete a Service Connection
-    url: /how-to-guides/admin-guide/delete-service-connection
-  - category: How to Guides / Admin Guide / Manage Teams and Users
-    url: /how-to-guides/admin-guide/teams-and-users
-  - category: How to Guides / Admin Guide / Manage Teams and Users / Team Structure in OpenMetadata
-    url: /how-to-guides/admin-guide/teams-and-users/team-structure-openmetadata
-  - category: How to Guides / Admin Guide / Manage Teams and Users / How to Add a Team
-    url: /how-to-guides/admin-guide/teams-and-users/add-team
-  - category: How to Guides / Admin Guide / Manage Teams and Users / How to Invite Users to OpenMetadata
-    url: /how-to-guides/admin-guide/teams-and-users/invite-users
-  - category: How to Guides / Admin Guide / Manage Teams and Users / How to Add Users to Teams
-    url: /how-to-guides/admin-guide/teams-and-users/add-users
-  - category: How to Guides / Admin Guide / Manage Teams and Users / How to Change the Team Type
-    url: /how-to-guides/admin-guide/teams-and-users/change-team-type
-  - category: How to Guides / Admin Guide / Advanced Guide for Roles and Policies
-    url: /how-to-guides/admin-guide/roles-policies
-  - category: How to Guides / Admin Guide / Advanced Guide for Roles and Policies / Building Blocks of Authorization - Rules, Policies, and Roles
-    url: /how-to-guides/admin-guide/roles-policies/authorization
-  - category: How to Guides / Admin Guide / Advanced Guide for Roles and Policies / Use Cases - Creating Roles & Policies in OpenMetadata
-    url: /how-to-guides/admin-guide/roles-policies/use-cases
-  - category: How to Guides / Admin Guide / CLI Ingestion with Basic Auth
-    url: /how-to-guides/admin-guide/cli-ingestion-with-basic-auth
-  - category: How to Guides / Admin Guide / How to Add Custom Logo
-    url: /how-to-guides/admin-guide/how-to-add-custom-logo
-  - category: How to Guides / Guide for Data Users
-    url: /how-to-guides/guide-for-data-users
-  - category: How to Guides / Guide for Data Users / Understanding the Basics of OpenMetadata
-    url: /how-to-guides/guide-for-data-users/basics-openmetadata
-  - category: How to Guides / Guide for Data Users / Overview of Data Assets
-    url: /how-to-guides/guide-for-data-users/data-asset-tabs
-  - category: How to Guides / Guide for Data Users / How to Add Description using Markdown
-    url: /how-to-guides/guide-for-data-users/description
-  - category: How to Guides / Guide for Data Users / How to Request for Description
-    url: /how-to-guides/guide-for-data-users/request-description
-  - category: How to Guides / Guide for Data Users / How to Assign or Change Data Ownership
-    url: /how-to-guides/guide-for-data-users/data-ownership
-  - category: How to Guides / Guide for Data Users / How to Follow a Data Asset
-    url: /how-to-guides/guide-for-data-users/follow-data-asset
-  - category: How to Guides / Guide for Data Users / How to Add Tags
-    url: /how-to-guides/guide-for-data-users/tags
-  - category: How to Guides / Guide for Data Users / How to Request for Tags
-    url: /how-to-guides/guide-for-data-users/request-tags
-  - category: How to Guides / Guide for Data Users / How to Add Glossary Terms
-    url: /how-to-guides/guide-for-data-users/glossary
-  - category: How to Guides / Guide for Data Users / How to Create a Custom Property for a Data Asset
-    url: /how-to-guides/guide-for-data-users/custom
-  - category: How to Guides / Guide for Data Users / Overview of Announcements
-    url: /how-to-guides/guide-for-data-users/announcements
-  - category: How to Guides / Guide for Data Users / How to Create an Announcement
-    url: /how-to-guides/guide-for-data-users/add-announcement
-  - category: How to Guides / Guide for Data Users / Data Asset Versioning
-    url: /how-to-guides/guide-for-data-users/versions
-  - category: How to Guides / Guide for Data Users / How to Delete a Data Asset
-    url: /how-to-guides/guide-for-data-users/delete
-  - category: How to Guides / Data Discovery
-    url: /how-to-guides/data-discovery
-  - category: How to Guides / Data Discovery / How to Discover Assets of Interest
-    url: /how-to-guides/data-discovery/discover
-  - category: How to Guides / Data Discovery / Get a Quick Glance of the Data Assets
-    url: /how-to-guides/data-discovery/preview
-  - category: How to Guides / Data Discovery / Detailed View of the Data Assets
-    url: /how-to-guides/data-discovery/details
-  - category: How to Guides / Data Discovery / Add Complex Queries using Advanced Search
-    url: /how-to-guides/data-discovery/advanced
-  - category: How to Guides / Data Collaboration
-    url: /how-to-guides/data-collaboration
-  - category: How to Guides / Data Collaboration / Understanding Activity Feeds
-    url: /how-to-guides/data-collaboration/activity-feeds
-  - category: How to Guides / Data Collaboration / How to Request for Description
-    url: /how-to-guides/data-collaboration/request-description
-  - category: How to Guides / Data Collaboration / How to Request for Tags
-    url: /how-to-guides/data-collaboration/request-tags
-  - category: How to Guides / Data Collaboration / Overview of Announcements
-    url: /how-to-guides/data-collaboration/announcements
-  - category: How to Guides / Data Collaboration / How to Create an Announcement
-    url: /how-to-guides/data-collaboration/add-announcement
-  - category: How to Guides / Data Quality and Profiler
-    url: /how-to-guides/data-quality-profiler
-  - category: How to Guides / Data Quality and Profiler / Profiler and Data Quality Tab
-    url: /how-to-guides/data-quality-profiler/tab
-  - category: How to Guides / Data Quality and Profiler / How to Write and Deploy No-Code Test Cases
-    url: /how-to-guides/data-quality-profiler/test
-  - category: How to Guides / Data Quality and Profiler / How to Set Alerts for Test Case Fails
-    url: /how-to-guides/data-quality-profiler/alerts
-  - category: How to Guides / Data Lineage
-    url: /how-to-guides/data-lineage
-  - category: How to Guides / Data Lineage / How to Deploy a Lineage Workflow
-    url: /how-to-guides/data-lineage/workflow
-  - category: How to Guides / Data Lineage / Explore the Lineage View
-    url: /how-to-guides/data-lineage/explore
-  - category: How to Guides / Data Lineage / How Column-Level Lineage Works
-    url: /how-to-guides/data-lineage/column
-  - category: How to Guides / Data Lineage / How to Manually Add or Edit Lineage
-    url: /how-to-guides/data-lineage/manual
-  - category: How to Guides / Data Insights
-    url: /how-to-guides/data-insights
-  - category: How to Guides / Data Insights / What is Tiering
-    url: /how-to-guides/data-insights/tiering
-  - category: How to Guides / Data Insights / Set Up Data Insights Ingestion
-    url: /how-to-guides/data-insights/ingestion
-  - category: How to Guides / Data Insights / Key Performance Indicators (KPI)
-    url: /how-to-guides/data-insights/kpi
-  - category: How to Guides / Data Insights / Data Insights Report
-    url: /how-to-guides/data-insights/report
-  - category: How to Guides / Data Insights / Configure the Data Insights Report
-    url: /how-to-guides/data-insights/email-report 
-  - category: How to Guides / Data Insights / Cost Analysis
-    url: /how-to-guides/data-insights/cost-analysis
-  - category: How to Guides / Data Insights / How to Transform the Data Culture of Your Company
-    url: /how-to-guides/data-insights/data-culture
-  - category: How to Guides / Data Governance
-    url: /how-to-guides/data-governance
-  - category: How to Guides / Data Governance / Glossary
-    url: /how-to-guides/data-governance/glossary
-  - category: How to Guides / Data Governance / Glossary / What is a Glossary Term
-    url: /how-to-guides/data-governance/glossary/glossary-term
-  - category: How to Guides / Data Governance / Glossary / How to Setup a Glossary
-    url: /how-to-guides/data-governance/glossary/setup
-  - category: How to Guides / Data Governance / Glossary / How to Create Glossary Terms
-    url: /how-to-guides/data-governance/glossary/create-terms
-  - category: How to Guides / Data Governance / Glossary / How to Bulk Import a Glossary
-    url: /how-to-guides/data-governance/glossary/import
-  - category: How to Guides / Data Governance / Glossary / How to Add Assets to Glossary Terms
-    url: /how-to-guides/data-governance/glossary/assets
-  - category: How to Guides / Data Governance / Glossary / Best Practices for Glossary
-    url: /how-to-guides/data-governance/glossary/best-practices
-  - category: How to Guides / Data Governance / Classification
-    url: /how-to-guides/data-governance/classification
-  - category: How to Guides / Data Governance / Classification / Overview of Classification
-    url: /how-to-guides/data-governance/classification/overview
-  - category: How to Guides / Data Governance / Classification / How to Classify Data Assets
-    url: /how-to-guides/data-governance/classification/assets
-  - category: How to Guides / Data Governance / Classification / How to Request for Classification Tags
-    url: /how-to-guides/data-governance/classification/request-tags
-  - category: How to Guides / Data Governance / Classification / Auto-Classification in OpenMetadata
-    url: /how-to-guides/data-governance/classification/auto
-  - category: How to Guides / Data Governance / Classification / What are Tiers
-    url: /how-to-guides/data-governance/classification/tiers
-  - category: How to Guides / Data Governance / Classification / Best Practices for Classification
-    url: /how-to-guides/data-governance/classification/best-practices
 
   - category: Features
     url: /features
@@ -1385,8 +1406,8 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/entity/services/connections/search/opensearchconnection
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / ServiceConnection
     url: /main-concepts/metadata-standard/schemas/entity/services/connections/serviceconnection
-  - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Storage / AdlsConection
-    url: /main-concepts/metadata-standard/schemas/entity/services/connections/storage/adlsconection
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Storage / adlsConnection
+    url: /main-concepts/metadata-standard/schemas/entity/services/connections/storage/adlsConnection
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Storage / CustomStorageConnection
     url: /main-concepts/metadata-standard/schemas/entity/services/connections/storage/customstorageconnection
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Storage / GcsConnection
@@ -1752,6 +1773,58 @@ site_menu:
     url: /sdk/python/build-connector/sink
   - category: SDK / Python SDK / Build a Connector / Bulk Sink
     url: /sdk/python/build-connector/bulk-sink
+  - category: SDK / Python SDK / API Reference
+    url: /sdk/python/api-reference/
+  - category: SDK / Python SDK / API Reference / Auth Provider
+    url: /sdk/python/api-reference/auth-provider
+  - category: SDK / Python SDK / API Reference / Client Utils
+    url: /sdk/python/api-reference/client-utils
+  - category: SDK / Python SDK / API Reference / Client
+    url: /sdk/python/api-reference/client
+  - category: SDK / Python SDK / API Reference / Credentials
+    url: /sdk/python/api-reference/credentials
+  - category: SDK / Python SDK / API Reference / Dashboard Mixin
+    url: /sdk/python/api-reference/dashboard-mixin
+  - category: SDK / Python SDK / API Reference / Data Insight Mixin
+    url: /sdk/python/api-reference/data-insight-mixin
+  - category: SDK / Python SDK / API Reference / ES Mixin
+    url: /sdk/python/api-reference/es-mixin
+  - category: SDK / Python SDK / API Reference / Ingestion Pipeline Mixin
+    url: /sdk/python/api-reference/ingestion-pipeline-mixin
+  - category: SDK / Python SDK / API Reference / Lineage Mixin
+    url: /sdk/python/api-reference/lineage-mixin
+  - category: SDK / Python SDK / API Reference / ML Model Mixin
+    url: /sdk/python/api-reference/mlmodel-mixin
+  - category: SDK / Python SDK / API Reference / Models
+    url: /sdk/python/api-reference/models
+  - category: SDK / Python SDK / API Reference / Ometa API
+    url: /sdk/python/api-reference/ometa-api
+  - category: SDK / Python SDK / API Reference / Patch Mixin Utils
+    url: /sdk/python/api-reference/patch-mixin-utils
+  - category: SDK / Python SDK / API Reference / Provider Registry
+    url: /sdk/python/api-reference/provider-registry
+  - category: SDK / Python SDK / API Reference / Query Mixin
+    url: /sdk/python/api-reference/query-mixin
+  - category: SDK / Python SDK / API Reference / Routes
+    url: /sdk/python/api-reference/routes
+  - category: SDK / Python SDK / API Reference / Search Index Mixin
+    url: /sdk/python/api-reference/search-index-mixin
+  - category: SDK / Python SDK / API Reference / Server Mixin
+    url: /sdk/python/api-reference/server-mixin
+  - category: SDK / Python SDK / API Reference / Service Mixin
+    url: /sdk/python/api-reference/service-mixin
+  - category: SDK / Python SDK / API Reference / Table Mixin
+    url: /sdk/python/api-reference/table-mixin
+  - category: SDK / Python SDK / API Reference / Tests Mixin
+    url: /sdk/python/api-reference/tests-mixin
+  - category: SDK / Python SDK / API Reference / Topic Mixin
+    url: /sdk/python/api-reference/topic-mixin
+  - category: SDK / Python SDK / API Reference / User Mixin
+    url: /sdk/python/api-reference/user-mixin
+  - category: SDK / Python SDK / API Reference / Utils Mixin
+    url: /sdk/python/api-reference/utils
+  - category: SDK / Python SDK / API Reference / Version Mixin
+    url: /sdk/python/api-reference/version-mixin
   - category: SDK / Java SDK
     url: /sdk/java
 ---

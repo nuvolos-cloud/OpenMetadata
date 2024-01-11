@@ -19,9 +19,9 @@ import ingestionFramework from '../../../assets/img/IngestionFramework.png';
 import tagCategoryImg from '../../../assets/img/TagCategory.png';
 import collateIcon from '../../../assets/svg/ic-collate.svg';
 
-export const LATEST_VERSION_ID = 19;
+export const LATEST_VERSION_ID = 21;
 
-export const COOKIE_VERSION = 'VERSION_1_2_0'; // To be changed with each release.
+export const COOKIE_VERSION = 'VERSION_1_2_4'; // To be changed with each release.
 
 // for youtube video make isImage = false and path = {video embed id}
 // embed:- youtube video => share => click on embed and take {url with id} from it
@@ -1079,6 +1079,74 @@ export const WHATS_NEW = [
       [`Cost Analysis Report ${CollateIconWithLinkMD}`]: `- The Usage Workflow will now also track how tables are Accessed and Updated.
 - This information will be used in the Data Insights workflow to show the evolution of your used and unused assets and compare them by size.
 - Support has been added for Snowflake, and we will continue to add more sources in upcoming releases.`,
+    },
+  },
+  {
+    id: 20,
+    version: 'v1.2.3',
+    description: 'Released on 7th Dec 2023.',
+    features: [],
+    changeLogs: {
+      Glossary: `- Improvements have been made to add assets in bulk to a glossary term
+- An Assets filter has been introduced to quickly find and add assets to a glossary term.
+- Improvements have been made with the glossary term deletion.
+`,
+      'Other Changes': `- RTL support for description and feed editor.
+
+- Display name is now supported in the Description title.
+
+- The property tagType added and can be used when suggesting tags.
+
+- Initial options updated for Tag suggestions.
+
+- The ingestion framework now supports the deletion of data models and stored procedures.
+
+- Assets can be added in bulk to Domains, Data Products, and to Teams.
+
+- OpenMetadata base server has been upgraded to Alpine 3.18.5.
+
+- The ingestion dependencies for database connections have been updated.
+
+- Improvements have been made to the data insights ingestion.
+
+- Fixed the issue with Tag version page.
+
+- Fixed the issue with task filter pipeline, which created duplicate columns.
+
+- Fixed issue with the creation of glossary terms.
+
+- Issue resolved with custom properties on glossary terms.
+
+- Fixed the missing tags issue on editing a glossary term.
+
+- Fixed the pipeline task filtering for failed status.
+
+- Fixed the issue with scroll bar in the Explore page.
+
+- UI issues with data quality test cases fixed.
+
+- Fixed the issue with ingestion bot deleting the assets assigned to data products.
+      `,
+    },
+  },
+  {
+    id: 21,
+    version: 'v1.2.4',
+    description: 'Released on 5th Jan 2024.',
+    features: [],
+    changeLogs: {
+      Changes: `- To ensure a reliable Glossary Term Approval process, the Owner/Creator of the glossary term cannot be a Reviewer of that term.
+- Long glossary term names are truncated.
+        `,
+      Improvements: `- Fixed a redirecting issue with the Glossary page.
+- Fixed an issue with Tasks for the Dashboard charts.
+- Fixed an issue with Profiler ingestion.
+- Fixed an issue with the Version page.
+- Fixed an issue with Connection details.
+- Fixed an issue with loading the Custom Property page.
+- Fixed an issue with Search Indexing.
+- Security fixes have been made.
+        `,
     },
   },
 ];

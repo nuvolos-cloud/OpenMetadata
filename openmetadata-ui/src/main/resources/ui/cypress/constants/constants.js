@@ -40,7 +40,7 @@ export const EXPLORE_PAGE_TABS = {
   mlmodels: 'ml models',
   storedProcedures: 'stored procedures',
   dataProducts: 'data products',
-  dataModel: 'dashboard data model',
+  dataModel: 'dashboard data models',
   searchIndexes: 'search indexes',
 };
 
@@ -51,6 +51,7 @@ export const SEARCH_INDEX = {
   pipelines: 'pipeline_search_index',
   mlmodels: 'mlmodel_search_index',
   containers: 'container_search_index',
+  searchIndexes: 'search_entity_search_index',
 };
 
 export const DATA_QUALITY_SAMPLE_DATA_TABLE = {
@@ -62,6 +63,8 @@ export const DATA_QUALITY_SAMPLE_DATA_TABLE = {
   sqlTestCase: 'Custom SQL Query',
   sqlQuery: 'Select * from dim_address',
 };
+
+export const COLUMN_NAME_FOR_APPLY_GLOSSARY_TERM = 'customer';
 
 export const SEARCH_ENTITY_TABLE = {
   table_1: {
@@ -236,10 +239,10 @@ export const NEW_TEST_SUITE = {
 };
 
 export const NEW_TABLE_TEST_CASE = {
-  name: 'table_column_name_to_exist_in_id',
+  name: `table_column_name_to_exist_in_id_${uuid()}`,
   label: 'Table Column Name To Exist',
   type: 'tableColumnNameToExist',
-  field: 'id',
+  field: 'testCase',
   description: 'New table test case for TableColumnNameToExist',
 };
 
@@ -305,13 +308,102 @@ export const NEW_GLOSSARY = {
   name: 'Cypress Glossary',
   description: 'This is the Cypress Glossary',
   reviewer: 'Aaron Johnson',
-  tag: 'PII.None',
+  addReviewer: true,
+  tag: 'PersonalData.Personal',
+  isMutually: true,
 };
 export const NEW_GLOSSARY_1 = {
   name: 'Cypress Product%Glossary',
   description: 'This is the Product glossary with percentage',
   reviewer: 'Brandy Miller',
+  addReviewer: false,
+};
+
+export const CYPRESS_ASSETS_GLOSSARY = {
+  name: 'Cypress Assets Glossary',
+  description: 'This is the Assets Cypress Glossary',
+  reviewer: '',
+  addReviewer: false,
   tag: 'PII.None',
+};
+
+export const CYPRESS_ASSETS_GLOSSARY_1 = {
+  name: 'Cypress Assets Glossary 1',
+  description: 'Cypress Assets Glossary 1 desc',
+  reviewer: '',
+  addReviewer: false,
+  tag: 'PII.None',
+};
+
+const COMMON_ASSETS = [
+  {
+    name: 'dim_customer',
+    fullyQualifiedName: 'sample_data.ecommerce_db.shopify.dim_customer',
+  },
+  {
+    name: 'raw_order',
+    fullyQualifiedName: 'sample_data.ecommerce_db.shopify.raw_order',
+  },
+  {
+    name: 'presto_etl',
+    fullyQualifiedName: 'sample_airflow.presto_etl',
+  },
+];
+
+export const CYPRESS_ASSETS_GLOSSARY_TERMS = {
+  term_1: {
+    name: 'Cypress%PercentTerm',
+    description: 'This is the Cypress PercentTerm',
+    synonyms: 'buy,collect,acquire',
+    fullyQualifiedName: 'Cypress Assets Glossary.Cypress%PercentTerm',
+    assets: COMMON_ASSETS,
+  },
+  term_2: {
+    name: 'Cypress Space GTerm',
+    description: 'This is the Cypress Sales',
+    synonyms: 'give,disposal,deal',
+    fullyQualifiedName: 'Cypress Assets Glossary.Cypress Space GTerm',
+    assets: COMMON_ASSETS,
+  },
+  term_3: {
+    name: 'Cypress.Dot.GTerm',
+    description: 'This is the Cypress with space',
+    synonyms: 'tea,coffee,water',
+    fullyQualifiedName: 'Cypress Assets Glossary."Cypress.Dot.GTerm"',
+    displayFqn: 'Cypress Assets Glossary.&quot;Cypress.Dot.GTerm&quot;',
+    assets: COMMON_ASSETS,
+  },
+};
+
+export const CYPRESS_ASSETS_GLOSSARY_TERMS_1 = {
+  term_1: {
+    name: 'Term1',
+    description: 'term1 desc',
+    fullyQualifiedName: 'Cypress Assets Glossary 1.Term1',
+    synonyms: 'buy,collect,acquire',
+    assets: COMMON_ASSETS,
+  },
+  term_2: {
+    name: 'Term2',
+    description: 'term2 desc',
+    synonyms: 'give,disposal,deal',
+    fullyQualifiedName: 'Cypress Assets Glossary 1.Term2',
+    assets: COMMON_ASSETS,
+  },
+  term_3: {
+    name: 'Term3',
+    synonyms: 'tea,coffee,water',
+    description: 'term3 desc',
+    fullyQualifiedName: 'Cypress Assets Glossary 1.Term3',
+    assets: COMMON_ASSETS,
+  },
+  term_4: {
+    name: 'Term4',
+    description: 'term4 desc',
+    synonyms: 'milk,biscuit,water',
+    fullyQualifiedName: 'Cypress Assets Glossary 1.Term4',
+    assets: COMMON_ASSETS,
+  },
 };
 
 export const NEW_GLOSSARY_TERMS = {
@@ -326,6 +418,13 @@ export const NEW_GLOSSARY_TERMS = {
     description: 'This is the Cypress Sales',
     synonyms: 'give,disposal,deal',
     fullyQualifiedName: 'Cypress Glossary.CypressSales',
+  },
+  term_3: {
+    name: 'Cypress Space',
+    description: 'This is the Cypress with space',
+    synonyms: 'tea,coffee,water',
+    fullyQualifiedName: 'Cypress Glossary.Cypress Space',
+    assets: COMMON_ASSETS,
   },
 };
 export const GLOSSARY_TERM_WITH_DETAILS = {
@@ -503,7 +602,7 @@ export const TAG_INVALID_NAMES = {
 export const INVALID_NAMES = {
   MAX_LENGTH:
     'a87439625b1c2d3e4f5061728394a5b6c7d8e90a1b2c3d4e5f67890aba87439625b1c2d3e4f5061728394a5b6c7d8e90a1b2c3d4e5f67890abName can be a maximum of 128 characters',
-  WITH_SPECIAL_CHARS: '!@#$%^&*()',
+  WITH_SPECIAL_CHARS: '::normalName::',
 };
 
 export const NAME_VALIDATION_ERROR =
@@ -518,6 +617,7 @@ export const NAME_MAX_LENGTH_VALIDATION_ERROR =
 export const DOMAIN_1 = {
   name: 'Cypress%Domain',
   updatedName: 'Cypress_Domain_Name',
+  fullyQualifiedName: 'Cypress%Domain',
   updatedDisplayName: 'Cypress_Domain_Display_Name',
   description:
     'This is the Cypress for testing domain creation with percent and dot',
@@ -549,8 +649,94 @@ export const DOMAIN_2 = {
   name: 'Cypress.Domain.New',
   updatedName: 'Cypress.Domain.New',
   updatedDisplayName: 'Cypress.Domain.New',
+  fullyQualifiedName: '"Cypress.Domain.New"',
   description: 'This is the Cypress for testing domain creation',
   experts: 'Alex Pollard',
   owner: 'Alex Pollard',
   domainType: 'Source-aligned',
+  dataProducts: [
+    {
+      name: 'Cypress DataProduct Assets',
+      description:
+        'This is the data product description for Cypress DataProduct Assets',
+      experts: 'Aaron Johnson',
+      owner: 'Aaron Johnson',
+      assets: [
+        {
+          name: 'dim_customer',
+          fullyQualifiedName: 'sample_data.ecommerce_db.shopify.dim_address',
+        },
+        {
+          name: 'raw_order',
+          fullyQualifiedName: 'sample_data.ecommerce_db.shopify.raw_order',
+        },
+        {
+          name: 'presto_etl',
+          fullyQualifiedName: 'sample_airflow.presto_etl',
+        },
+      ],
+    },
+  ],
+  assets: [
+    {
+      name: 'dim_customer',
+      fullyQualifiedName: 'sample_data.ecommerce_db.shopify.dim_address',
+    },
+    {
+      name: 'raw_order',
+      fullyQualifiedName: 'sample_data.ecommerce_db.shopify.raw_order',
+    },
+    {
+      name: 'presto_etl',
+      fullyQualifiedName: 'sample_airflow.presto_etl',
+    },
+  ],
+};
+
+export const DOMAIN_3 = {
+  name: 'Cypress Space',
+  updatedName: 'Cypress Space',
+  updatedDisplayName: 'Cypress Space',
+  fullyQualifiedName: 'Cypress Space',
+  description: 'This is the Cypress for testing domain with space creation',
+  experts: 'Alex Pollard',
+  owner: 'Alex Pollard',
+  domainType: 'Source-aligned',
+  dataProducts: [
+    {
+      name: 'Cypress%PercentDP',
+      description:
+        'This is the data product description for Cypress DataProduct Assets',
+      experts: 'Aaron Johnson',
+      owner: 'Aaron Johnson',
+      assets: [
+        {
+          name: 'forecast_sales_performance',
+          fullyQualifiedName: 'sample_superset.forecast_sales_performance',
+        },
+        {
+          name: 'eta_predictions',
+          fullyQualifiedName: 'mlflow_svc.eta_predictions',
+        },
+        {
+          name: 'operations_view',
+          fullyQualifiedName: 'sample_looker.model.operations_view',
+        },
+      ],
+    },
+  ],
+  assets: [
+    {
+      name: 'forecast_sales_performance',
+      fullyQualifiedName: 'sample_superset.forecast_sales_performance',
+    },
+    {
+      name: 'eta_predictions',
+      fullyQualifiedName: 'mlflow_svc.eta_predictions',
+    },
+    {
+      name: 'operations_view',
+      fullyQualifiedName: 'sample_looker.model.operations_view',
+    },
+  ],
 };
