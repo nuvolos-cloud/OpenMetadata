@@ -131,6 +131,7 @@ plugins: Dict[str, Set[str]] = {
     "amundsen": {VERSIONS["neo4j"]},
     "athena": {"pyathena==3.0.8"},
     "atlas": {},
+    "azfs": {"azure-storage-file-share"},
     "azuresql": {VERSIONS["pyodbc"]},
     "azure-sso": {VERSIONS["msal"]},
     "backup": {VERSIONS["boto3"], "azure-identity", "azure-storage-blob"},

@@ -35,6 +35,13 @@ public class WebAnalyticEventHandler implements EventHandler {
   }
 
   private void incrementMetric(String username) {
+    if (clusterName == null) {
+      LOG.warn("[Web Analytic Event Handler] Cluster name is null");
+      return;
+    } else if (username == null) {
+      LOG.warn("[Web Analytic Event Handler] Username is null");
+      return;
+    }
     Counter.builder(COUNTER_NAME)
         .tags("clusterName", clusterName, "username", username)
         .register(prometheusMeterRegistry)

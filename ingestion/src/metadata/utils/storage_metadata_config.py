@@ -20,6 +20,9 @@ import requests
 from metadata.generated.schema.entity.services.connections.database.datalake.azureConfig import (
     AzureConfig,
 )
+from metadata.generated.schema.entity.services.connections.database.datalake.azfsConfig import (
+    AZFSConfig,
+)
 from metadata.generated.schema.entity.services.connections.database.datalake.gcsConfig import (
     GCSConfig,
 )
@@ -31,6 +34,9 @@ from metadata.generated.schema.metadataIngestion.storage.manifestMetadataConfig 
 )
 from metadata.generated.schema.metadataIngestion.storage.storageMetadataADLSConfig import (
     StorageMetadataAdlsConfig,
+)
+from metadata.generated.schema.metadataIngestion.storage.storageMetadataAZFSConfig import (
+    StorageMetadataAzfsConfig,
 )
 from metadata.generated.schema.metadataIngestion.storage.storageMetadataGCSConfig import (
     StorageMetadataGcsConfig,
@@ -131,6 +137,37 @@ def _(config: StorageMetadataS3Config) -> ManifestMetadataConfig:
 
         manifest = reader.read(path=path, bucket_name=bucket_name)
         return ManifestMetadataConfig.parse_obj(json.loads(manifest))
+    except Exception as exc:
+        logger.debug(traceback.format_exc())
+        raise StorageMetadataConfigException(
+            f"Error fetching manifest file from s3: {exc}"
+        )
+
+
+@get_manifest.register
+def _(config: StorageMetadataAzfsConfig) -> ManifestMetadataConfig:
+    """Read the manifest from Azure File Share"""
+    try:
+        share_name, path = (
+            config.prefixConfig.containerName,
+            config.prefixConfig.objectPrefix,
+        )
+        from azure.storage.fileshare import (  # pylint: disable=import-outside-toplevel
+            ShareFileClient,
+        )
+
+        share_file_client = ShareFileClient.from_connection_string(
+            conn_str=config.securityConfig.connectionString,
+            share_name=config.securityConfig.fileShareName,
+            file_path=path,
+        )
+        reader = get_reader(
+            config_source=AZFSConfig(securityConfig=config.securityConfig),
+            client=share_file_client,
+        )
+        return ManifestMetadataConfig.parse_obj(
+            json.loads(reader.read(path=path, bucket_name=share_name))
+        )
     except Exception as exc:
         logger.debug(traceback.format_exc())
         raise StorageMetadataConfigException(

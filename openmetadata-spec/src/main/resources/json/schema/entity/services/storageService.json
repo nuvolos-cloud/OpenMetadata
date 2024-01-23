@@ -19,6 +19,7 @@
       "enum": [
         "S3",
         "ADLS",
+        "AZFS",
         "GCS",
         "CustomStorage"
       ],
@@ -28,6 +29,9 @@
         },
         {
           "name": "ADLS"
+        },
+        {
+          "name": "AZFS"
         },
         {
           "name": "GCS"
@@ -53,6 +57,9 @@
             },
             {
               "$ref": "connections/storage/adlsConnection.json"
+            },
+            {
+              "$ref": "connections/storage/azfsConnection.json"
             },
             {
               "$ref": "connections/storage/gcsConnection.json"

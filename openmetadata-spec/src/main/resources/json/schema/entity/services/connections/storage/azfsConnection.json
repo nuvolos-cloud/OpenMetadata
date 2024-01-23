@@ -1,0 +1,45 @@
+{
+  "$id": "https://open-metadata.org/schema/entity/services/connections/storage/azfsConnection.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Azure File Share Connection",
+  "description": "Azure File Share Connection.",
+  "type": "object",
+  "javaType": "org.openmetadata.schema.services.connections.storage.AZFSConnection",
+  "definitions": {
+    "azureFsType": {
+      "description": "AZFS service type",
+      "type": "string",
+      "enum": ["AZFS"],
+      "default": "AZFS"
+    }
+  },
+  "properties": {
+    "type": {
+      "title": "Service Type",
+      "description": "Service Type",
+      "$ref": "#/definitions/azureFsType",
+      "default": "AZFS"
+    },
+    "credentials": {
+      "title": "Azure File Share Credentials",
+      "description": "Azure File Share Credentials",
+      "$ref": "../../../../security/credentials/azureFileShareCredentials.json"
+    },
+    "connectionOptions": {
+      "title": "Connection Options",
+      "$ref": "../connectionBasicType.json#/definitions/connectionOptions"
+    },
+    "connectionArguments": {
+      "title": "Connection Arguments",
+      "$ref": "../connectionBasicType.json#/definitions/connectionArguments"
+    },
+    "supportsMetadataExtraction": {
+      "title": "Supports Metadata Extraction",
+      "$ref": "../connectionBasicType.json#/definitions/supportsMetadataExtraction"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "credentials"
+  ]
+}

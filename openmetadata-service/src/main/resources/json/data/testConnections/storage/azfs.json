@@ -1,0 +1,14 @@
+{
+    "name": "AZFS",
+    "displayName": "AZFS Test Connection",
+    "description": "This Test Connection validates the access against the Azure File Share storage service.",
+    "steps": [
+      {
+        "name": "ListShare",
+        "description": "List all the Azure File Shares available to the user.",
+        "errorMessage": "Failed to fetch Azure File Shares, please check if the connection string is valid.",
+        "shortCircuit": true,
+        "mandatory": true
+      }
+    ]
+  }

@@ -25,6 +25,9 @@ from metadata.generated.schema.entity.services.connections.database.datalake.gcs
 from metadata.generated.schema.entity.services.connections.database.datalake.s3Config import (
     S3Config,
 )
+from metadata.generated.schema.entity.services.connections.database.datalake.azfsConfig import (
+    AZFSConfig,
+)
 from metadata.generated.schema.entity.services.connections.database.datalakeConnection import (
     LocalConfig,
 )
@@ -101,6 +104,30 @@ class DSVDataFrameReader(DataFrameReader):
             path=path,
             storage_options=storage_options,
         )
+
+    @_read_dsv_dispatch.register
+    def _(self, config: AZFSConfig, key: str, share_name: str) -> DatalakeColumnWrapper:
+        from io import StringIO
+        import pandas as pd
+        from azure.storage.fileshare import ShareFileClient
+
+        share_file_client = ShareFileClient.from_connection_string(
+            conn_str=config.securityConfig.connectionString,
+            share_name=share_name,
+            file_path=key,
+        )
+        stream_io = StringIO()
+        share_file_client.download_file().readinto(stream_io)
+        chunk_list = []
+        with pd.read_csv(
+            stream_io,
+            sep=self.separator,
+            chunksize=CHUNKSIZE,
+        ) as reader:
+            for chunks in reader:
+                chunk_list.append(chunks)
+
+        return DatalakeColumnWrapper(dataframes=chunk_list)
 
     @_read_dsv_dispatch.register
     def _(  # pylint: disable=unused-argument

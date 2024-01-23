@@ -1,17 +1,16 @@
 package org.openmetadata.service.events.scheduled;
 
-import static org.openmetadata.sdk.PipelineServiceClient.HEALTHY_STATUS;
-import static org.openmetadata.sdk.PipelineServiceClient.STATUS_KEY;
-import static org.openmetadata.service.events.scheduled.PipelineServiceStatusJobHandler.JOB_CONTEXT_CLUSTER_NAME;
-import static org.openmetadata.service.events.scheduled.PipelineServiceStatusJobHandler.JOB_CONTEXT_METER_REGISTRY;
-import static org.openmetadata.service.events.scheduled.PipelineServiceStatusJobHandler.JOB_CONTEXT_PIPELINE_SERVICE_CLIENT;
-
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.openmetadata.sdk.PipelineServiceClient;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
+import static org.openmetadata.sdk.PipelineServiceClient.HEALTHY_STATUS;
+import static org.openmetadata.sdk.PipelineServiceClient.STATUS_KEY;
+import static org.openmetadata.service.events.scheduled.PipelineServiceStatusJobHandler.JOB_CONTEXT_CLUSTER_NAME;
+import static org.openmetadata.service.events.scheduled.PipelineServiceStatusJobHandler.JOB_CONTEXT_METER_REGISTRY;
+import static org.openmetadata.service.events.scheduled.PipelineServiceStatusJobHandler.JOB_CONTEXT_PIPELINE_SERVICE_CLIENT;
 
 @Slf4j
 public class PipelineServiceStatusJob implements Job {
@@ -52,9 +51,13 @@ public class PipelineServiceStatusJob implements Job {
   }
 
   private void publishUnhealthyCounter(PrometheusMeterRegistry meterRegistry, String clusterName) {
-    Counter.builder(COUNTER_NAME)
-        .tags(STATUS_KEY, UNHEALTHY_TAG_NAME, CLUSTER_TAG_NAME, clusterName)
-        .register(meterRegistry)
-        .increment();
+    if (clusterName == null) {
+      LOG.warn("[Pipeline Service Status Job] Cluster name is null");
+    } else {
+      Counter.builder(COUNTER_NAME)
+      .tags(STATUS_KEY, UNHEALTHY_TAG_NAME, CLUSTER_TAG_NAME, clusterName)
+      .register(meterRegistry)
+      .increment();
+    }
   }
 }

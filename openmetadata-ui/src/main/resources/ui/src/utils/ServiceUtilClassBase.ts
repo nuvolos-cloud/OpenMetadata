@@ -17,6 +17,7 @@ import {
   AIRBYTE,
   AIRFLOW,
   AMAZON_S3,
+  AZFS,
   AMUNDSEN,
   ATHENA,
   ATLAS,
@@ -97,6 +98,7 @@ import { MetadataServiceType } from '../generated/entity/services/metadataServic
 import { SearchSourceAlias } from '../interface/search.interface';
 import customConnection from '../jsons/connectionSchemas/connections/storage/customStorageConnection.json';
 import s3Connection from '../jsons/connectionSchemas/connections/storage/s3Connection.json';
+import azfsConnection from '../jsons/connectionSchemas/connections/storage/azfsConnection.json';
 import { customServiceComparator } from './StringsUtils';
 
 class ServiceUtilClassBase {
@@ -148,6 +150,7 @@ class ServiceUtilClassBase {
   ) {
     const serviceTypes = this.getSupportedServiceFromList();
     const type = searchSource?.serviceType ?? '';
+    console.log('### Service Type:', type);
     switch (type) {
       case DatabaseServiceType.Mysql:
         return MYSQL;
@@ -343,6 +346,9 @@ class ServiceUtilClassBase {
       case StorageServiceType.S3:
         return AMAZON_S3;
 
+      case StorageServiceType.Azfs:
+        return AZFS;
+
       case SearchServiceType.ElasticSearch:
         return ELASTIC_SEARCH;
 
@@ -378,6 +384,11 @@ class ServiceUtilClassBase {
     switch (type) {
       case StorageServiceType.S3: {
         schema = s3Connection;
+
+        break;
+      }
+      case StorageServiceType.Azfs: {
+        schema = azfsConnection;
 
         break;
       }

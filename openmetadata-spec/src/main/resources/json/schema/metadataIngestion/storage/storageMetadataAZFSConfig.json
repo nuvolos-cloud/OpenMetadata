@@ -1,0 +1,20 @@
+{
+  "$id": "https://open-metadata.org/schema/metadataIngestion/storage/storageMetadataAZFSConfig.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Storage Metadata AZFS Config",
+  "description": "Storage Metadata Manifest file Azure File Share path config.",
+  "javaType": "org.openmetadata.schema.metadataIngestion.storage.StorageMetadataAZFSConfig",
+  "type": "object",
+  "properties": {
+    "securityConfig": {
+      "title": "Azure File Share Security Config",
+      "$ref": "../../security/credentials/azureFileShareCredentials.json"
+    },
+    "prefixConfig": {
+      "title": "Storage Metadata Prefix Config",
+      "$ref": "./storageBucketDetails.json"
+    }
+  },
+  "additionalProperties": false,
+  "required": ["prefixConfig"]
+}

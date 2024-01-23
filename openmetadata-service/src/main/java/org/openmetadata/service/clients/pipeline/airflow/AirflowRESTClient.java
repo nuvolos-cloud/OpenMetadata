@@ -266,6 +266,7 @@ public class AirflowRESTClient extends PipelineServiceClient {
     HttpResponse<String> response;
     try {
       String healthUrl = buildURI("health-auth").build().toString();
+      LOG.info("### Checking Airflow REST status at [{}].", healthUrl);
       response = getRequestAuthenticatedForJsonContent(healthUrl);
 
       // We can reach the APIs and get the status back from Airflow
@@ -438,8 +439,11 @@ public class AirflowRESTClient extends PipelineServiceClient {
   private URIBuilder buildURI(String path) {
     try {
       List<String> pathInternal = new ArrayList<>(API_ENDPOINT_SEGMENTS);
+      URIBuilder uriBuilder = new URIBuilder(String.valueOf(serviceURL));
+      pathInternal.addAll(0, uriBuilder.getPathSegments());
       pathInternal.add(path);
-      return new URIBuilder(String.valueOf(serviceURL)).setPathSegments(pathInternal);
+      LOG.info("### Building URI for path [{}] using service URL [{}].", path, serviceURL);
+      return uriBuilder.setPathSegments(pathInternal);
     } catch (Exception e) {
       throw clientException(String.format("Failed to built request URI for path [%s].", path), e);
     }
@@ -448,6 +452,7 @@ public class AirflowRESTClient extends PipelineServiceClient {
   private HttpResponse<String> getRequestAuthenticatedForJsonContent(String url)
       throws IOException, InterruptedException {
     HttpRequest request = authenticatedRequestBuilder(url).GET().build();
+    LOG.info("### Checking Airflow REST status at [{}].", request.uri().toString());
     return client.send(request, HttpResponse.BodyHandlers.ofString());
   }
 

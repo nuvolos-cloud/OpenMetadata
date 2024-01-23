@@ -21,6 +21,9 @@ from typing import Any
 from metadata.generated.schema.entity.services.connections.database.datalake.azureConfig import (
     AzureConfig,
 )
+from metadata.generated.schema.entity.services.connections.database.datalake.azfsConfig import (
+    AZFSConfig,
+)
 from metadata.generated.schema.entity.services.connections.database.datalake.gcsConfig import (
     GCSConfig,
 )
@@ -43,6 +46,7 @@ from metadata.generated.schema.metadataIngestion.dbtconfig.dbtS3Config import (
     DbtS3Config,
 )
 from metadata.readers.file.adls import ADLSReader
+from metadata.readers.file.azfs import AZFSReader
 from metadata.readers.file.base import Reader
 from metadata.readers.file.gcs import GCSReader
 from metadata.readers.file.local import LocalReader
@@ -52,6 +56,7 @@ from metadata.readers.models import ConfigSource
 CONFIG_SOURCE_READER = {
     LocalConfig.__name__: LocalReader,
     AzureConfig.__name__: ADLSReader,
+    AZFSConfig.__name__: AZFSReader,
     GCSConfig.__name__: GCSReader,
     S3Config.__name__: S3Reader,
     DbtLocalConfig.__name__: LocalReader,
