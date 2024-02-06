@@ -15,6 +15,7 @@ Dataframe base reader
 
 from abc import ABC, abstractmethod
 from typing import Any, Optional
+import traceback
 
 from metadata.readers.dataframe.models import DatalakeColumnWrapper
 from metadata.readers.file.base import Reader
@@ -68,4 +69,5 @@ class DataFrameReader(ABC):
         try:
             return self._read(key=key, bucket_name=bucket_name, **kwargs)
         except Exception as err:
+            logger.debug(traceback.format_exc())
             raise DataFrameReadException(f"Error reading dataframe due to [{err}]")

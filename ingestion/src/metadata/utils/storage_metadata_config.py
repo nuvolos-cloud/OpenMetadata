@@ -147,17 +147,32 @@ def _(config: StorageMetadataS3Config) -> ManifestMetadataConfig:
 @get_manifest.register
 def _(config: StorageMetadataAzfsConfig) -> ManifestMetadataConfig:
     """Read the manifest from Azure File Share"""
+    from metadata.ingestion.models.custom_pydantic import CustomSecretStr
+
     try:
         share_name, path = (
             config.prefixConfig.containerName,
             config.prefixConfig.objectPrefix,
         )
+        path = (
+            f"{path}/{STORAGE_METADATA_MANIFEST_FILE_NAME}"
+            if path
+            else STORAGE_METADATA_MANIFEST_FILE_NAME
+        )
         from azure.storage.fileshare import (  # pylint: disable=import-outside-toplevel
             ShareFileClient,
         )
 
+        if isinstance(config.securityConfig.connectionString, CustomSecretStr):
+            conn_str = config.securityConfig.connectionString.get_secret_value()
+        else:
+            conn_str = config.securityConfig.connectionString
+
+        logger.info(
+            f"Reading metadata manifest on Azure File Share [{share_name}] from: {path}"
+        )
         share_file_client = ShareFileClient.from_connection_string(
-            conn_str=config.securityConfig.connectionString,
+            conn_str=conn_str,
             share_name=config.securityConfig.fileShareName,
             file_path=path,
         )
@@ -171,7 +186,7 @@ def _(config: StorageMetadataAzfsConfig) -> ManifestMetadataConfig:
     except Exception as exc:
         logger.debug(traceback.format_exc())
         raise StorageMetadataConfigException(
-            f"Error fetching manifest file from s3: {exc}"
+            f"Error fetching manifest file from Azure File Share: {exc}"
         )
 
 

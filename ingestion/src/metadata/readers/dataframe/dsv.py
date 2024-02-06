@@ -106,21 +106,25 @@ class DSVDataFrameReader(DataFrameReader):
         )
 
     @_read_dsv_dispatch.register
-    def _(self, config: AZFSConfig, key: str, share_name: str) -> DatalakeColumnWrapper:
-        from io import StringIO
+    def _(
+        self, config: AZFSConfig, key: str, bucket_name: str
+    ) -> DatalakeColumnWrapper:
+        from io import StringIO, BytesIO
         import pandas as pd
         from azure.storage.fileshare import ShareFileClient
 
         share_file_client = ShareFileClient.from_connection_string(
-            conn_str=config.securityConfig.connectionString,
-            share_name=share_name,
+            conn_str=config.securityConfig.connectionString.get_secret_value(),
+            share_name=bucket_name,
             file_path=key,
         )
-        stream_io = StringIO()
-        share_file_client.download_file().readinto(stream_io)
+        byte_stream = BytesIO()
+        share_file_client.download_file().readinto(byte_stream)
+        byte_stream.seek(0)  # Move the stream position to the beginning
+        content = byte_stream.getvalue().decode()  # Decode the bytes into a string
         chunk_list = []
         with pd.read_csv(
-            stream_io,
+            StringIO(content),  # Pass the decoded string to pd.read_csv()
             sep=self.separator,
             chunksize=CHUNKSIZE,
         ) as reader:

@@ -66,6 +66,8 @@ from metadata.ingestion.models.custom_pydantic import CustomSecretStr
 
 logger = ingestion_logger()
 
+SCHEMA_FILE_NAME = "schema.csv"
+
 
 class AzfsSource(StorageServiceSource):
     """
@@ -140,15 +142,15 @@ class AzfsSource(StorageServiceSource):
                             f"Extracting metadata from path {metadata_entry.dataPath.strip(KEY_SEPARATOR)} "
                             f"and generating structured container"
                         )
-                        structured_container: Optional[
-                            AZFSFolderDetails
-                        ] = self._generate_container_details(
-                            share_response=share,
-                            metadata_entry=metadata_entry,
-                            parent=EntityReference(
-                                id=self._bucket_cache[share.name].id.__root__,
-                                type="container",
-                            ),
+                        structured_container: Optional[AZFSFolderDetails] = (
+                            self._generate_container_details(
+                                share_response=share,
+                                metadata_entry=metadata_entry,
+                                parent=EntityReference(
+                                    id=self._bucket_cache[share.name].id.__root__,
+                                    type="container",
+                                ),
+                            )
                         )
                         if structured_container:
                             yield structured_container
@@ -173,10 +175,12 @@ class AzfsSource(StorageServiceSource):
     def yield_create_container_requests(
         self, container_details: AZFSShareResponse
     ) -> Iterable[Either[CreateContainerRequest]]:
+        logger.info(f"Creating container request for {container_details.name}")
         container_request = CreateContainerRequest(
             name=container_details.name,
             prefix=container_details.prefix,
             numberOfObjects=container_details.number_of_files,
+            dataModel=container_details.data_model,
             size=container_details.size,
             service=self.context.objectstore_service,
             parent=container_details.parent,
@@ -207,7 +211,7 @@ class AzfsSource(StorageServiceSource):
                 sample_key=sample_key,
                 metadata_entry=metadata_entry,
                 config_source=AZFSConfig(
-                    securityConfig=self.service_connection.securityConfig,
+                    securityConfig=self.service_connection.credentials,
                 ),
                 client=share_file_client,
             )
@@ -244,12 +248,12 @@ class AzfsSource(StorageServiceSource):
                 f"Extracting metadata from path {metadata_entry.dataPath.strip(KEY_SEPARATOR)} "
                 f"and generating structured container"
             )
-            structured_container: Optional[
-                AZFSFolderDetails
-            ] = self._generate_container_details(
-                share_response=bucket_response,
-                metadata_entry=metadata_entry,
-                parent=parent,
+            structured_container: Optional[AZFSFolderDetails] = (
+                self._generate_container_details(
+                    share_response=bucket_response,
+                    metadata_entry=metadata_entry,
+                    parent=parent,
+                )
             )
             if structured_container:
                 result.append(structured_container)
@@ -265,7 +269,10 @@ class AzfsSource(StorageServiceSource):
                 )
             )
             # No pagination required, as there is a hard 1000 limit on nr of buckets per aws account
-            for share in share_client.list_shares() or []:
+            for share in (
+                share_client.list_shares(name_starts_with=self.connection.fileShareName)
+                or []
+            ):
                 if filter_by_container(
                     self.source_config.containerFilterPattern,
                     container_name=share.name,
@@ -285,7 +292,7 @@ class AzfsSource(StorageServiceSource):
             logger.error(f"Failed to fetch buckets list - {err}")
         return results
 
-    def get_file_count(self, share_name, folder_name: str = "/") -> int:
+    def get_file_count(self, share_name, folder_name: str = "") -> int:
         """
         Method to get the file count in a folder of a share
         """
@@ -298,9 +305,7 @@ class AzfsSource(StorageServiceSource):
                 )
             )
             count = 0
-            for item in directory_client.list_directories_and_files(
-                directory_name=folder_name
-            ):
+            for item in directory_client.list_directories_and_files():
                 if isinstance(item, DirectoryProperties):
                     count += self.get_file_count(
                         share_name=share_name,
@@ -316,7 +321,7 @@ class AzfsSource(StorageServiceSource):
             )
         return 0
 
-    def get_folder_size(self, share_name, folder_name: str = "/") -> int:
+    def get_folder_size(self, share_name, folder_name: str = "") -> int:
         """
         Method to get the folder size in a share
         """
@@ -329,9 +334,7 @@ class AzfsSource(StorageServiceSource):
                 )
             )
             size = 0
-            for item in directory_client.list_directories_and_files(
-                directory_name=folder_name
-            ):
+            for item in directory_client.list_directories_and_files():
                 if isinstance(item, DirectoryProperties):
                     size += self.get_folder_size(
                         share_name=share_name,
@@ -352,7 +355,7 @@ class AzfsSource(StorageServiceSource):
     ) -> AZFSFolderDetails:
         return AZFSFolderDetails(
             share_name=share_response.name,
-            name="/",
+            name=share_response.name,
             prefix=KEY_SEPARATOR,
             number_of_files=self.get_file_count(share_name=share_response.name),
             size=self.get_folder_size(share_name=share_response.name),
@@ -363,39 +366,9 @@ class AzfsSource(StorageServiceSource):
     def _get_sample_file_path(
         self, share_name: str, metadata_entry: MetadataEntry
     ) -> Optional[str]:
-        """
-        Given a bucket and a metadata entry, returns the full path key to a file which can then be used to infer schema
-        or None in the case of a non-structured metadata entry, or if no such keys can be found
-        """
-        prefix = self._get_sample_file_prefix(metadata_entry=metadata_entry)
-        # this will look only in the first 1000 files under that path (default for list_objects_v2).
-        # We'd rather not do pagination here as it would incur unwanted costs
-        try:
-            if prefix:
-                response = ShareDirectoryClient.from_connection_string(
-                    conn_str=self.connection.connectionString,
-                    share_name=share_name,
-                ).list_directories_and_files(name_starts_with=prefix)
-                candidate_keys = [
-                    r.name for r in response if not isinstance(r, DirectoryProperties)
-                ]
-                # pick a random key out of the candidates if any were returned
-                if candidate_keys:
-                    result_key = secrets.choice(candidate_keys)
-                    logger.info(
-                        f"File {result_key} was picked to infer data structure from."
-                    )
-                    return result_key
-                logger.warning(
-                    f"No sample files found in {prefix} with {metadata_entry.structureFormat} extension"
-                )
-            return None
-        except Exception:
-            logger.debug(traceback.format_exc())
-            logger.warning(
-                f"Error when trying to list objects in S3 bucket {share_name} at prefix {prefix}"
-            )
-            return None
+        return os.path.join(
+            metadata_entry.dataPath.strip(KEY_SEPARATOR), SCHEMA_FILE_NAME
+        )
 
     def _load_metadata_file(self, share_name: str) -> Optional[StorageContainerConfig]:
         """
